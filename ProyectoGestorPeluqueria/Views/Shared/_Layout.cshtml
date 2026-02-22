@@ -1,0 +1,102 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Gestor Peluquería</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/ProyectoGestorPeluqueria.styles.css" asp-append-version="true" />
+
+    <style>
+        /* Ajustes de estilo para un look más profesional */
+        .navbar {
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px); /* Efecto cristal moderno */
+            background-color: rgba(255, 255, 255, 0.95) !important;
+        }
+        .navbar-brand {
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: #2c3e50 !important;
+        }
+        .nav-link {
+            font-weight: 500;
+            margin: 0 5px;
+            transition: color 0.2s;
+        }
+        .nav-link:hover {
+            color: #0d6efd !important; /* Color primario al pasar el mouse */
+        }
+        .btn-login {
+            border-radius: 20px;
+            padding: 8px 20px;
+            font-weight: 600;
+        }
+        .footer {
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom shadow-sm sticky-top">
+            <div class="container">
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
+                    <i class="fas fa-scissors me-2 text-primary"></i>GestorPeluquería
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
+                        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">
+                                <i class="fas fa-home me-1"></i> Inicio
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Gestion" asp-action="RegistrarNegocio">
+                                <i class="fa-solid fa-hammer"></i> Registrar Negocio
+                            </a>
+                        </li>
+                    </ul>
+
+                    <ul class="navbar-nav ms-auto align-items-center">
+                        <li class="nav-item me-2">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Login" asp-action="Registrarse">Registrarse</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-outline-primary btn-login" asp-area="" asp-controller="Login" asp-action="Login">
+                                <i class="fas fa-user-circle me-1"></i> Iniciar Sesión
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container">
+        <main role="main" class="py-4">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted py-3">
+        <div class="container text-center">
+            &copy; 2026 - <span class="fw-bold">Gestor Peluquería</span> -
+            <a asp-area="" asp-controller="Home" asp-action="Privacy" class="text-decoration-none">Privacidad</a>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

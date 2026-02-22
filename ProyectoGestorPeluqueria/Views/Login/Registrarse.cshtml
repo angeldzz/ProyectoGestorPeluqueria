@@ -1,0 +1,178 @@
+﻿@{
+    ViewData["Title"] = "Crear Cuenta";
+}
+
+<style>
+    .auth-container {
+        min-height: 90vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+        background: radial-gradient(circle at bottom left, #f1f5f9 0%, #ffffff 100%);
+    }
+
+    .register-card {
+        border: none;
+        border-radius: 24px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+        overflow: hidden;
+        max-width: 600px;
+        width: 100%;
+        background: #fff;
+    }
+
+    .form-section-title {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #94a3b8;
+        font-weight: 700;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+        .form-section-title::after {
+            content: &#39;
+            &#39;
+            ;
+            flex: 1;
+            height: 1px;
+            background: #f1f5f9;
+        }
+
+    .role-selector {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+
+    .role-option {
+        flex: 1;
+        position: relative;
+    }
+
+        .role-option input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+    .role-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 15px;
+        border: 2px solid #f1f5f9;
+        border-radius: 16px;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-align: center;
+    }
+
+    .role-option input:checked + .role-card {
+        border-color: #4f46e5;
+        background-color: #f5f3ff;
+    }
+
+        .role-option input:checked + .role-card i {
+            color: #4f46e5;
+        }
+
+    .role-card i {
+        font-size: 1.5rem;
+        margin-bottom: 8px;
+        color: #94a3b8;
+    }
+
+    .role-card span {
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    .btn-register {
+        background-color: #4f46e5;
+        border: none;
+        border-radius: 12px;
+        padding: 14px;
+        font-weight: 700;
+        transition: all 0.3s;
+    }
+
+        .btn-register:hover {
+            background-color: #4338ca;
+            box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
+        }
+
+</style>
+
+<div class="auth-container">
+    <div class="card register-card p-4 p-md-5">
+        <div class="text-center mb-5"> <h2 class="fw-bold">Únete a GlowStyle</h2> <p class="text-muted">Comienza a gestionar tus citas hoy mismo</p> </div>
+
+        <form asp-controller="Account" asp-action="Register" method="post">
+
+            <div class="form-section-title">Elige tu perfil</div>
+            <div class="role-selector">
+                <label class="role-option">
+                    <input type="radio" name="Role" value="Cliente" checked>
+                    <div class="role-card">
+                        <i class="fas fa-user"></i>
+                        <span>Soy Cliente</span>
+                    </div>
+                </label>
+                <label class="role-option">
+                    <input type="radio" name="Role" value="Empresario">
+                    <div class="role-card">
+                        <i class="fas fa-briefcase"></i>
+                        <span>Soy Dueño</span>
+                    </div>
+                </label>
+            </div>
+
+            <div class="form-section-title">Información Personal</div>
+            <div class="row g-3">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Nombre Completo</label>
+                    <input type="text" class="form-control" placeholder="Juan Pérez" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Teléfono</label>
+                    <input type="tel" class="form-control" placeholder="600 000 000">
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Correo Electrónico</label>
+                <input type="email" class="form-control" placeholder="nombre@correo.com" required>
+            </div>
+
+            <div class="form-section-title mt-4">Seguridad</div>
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label">Contraseña</label>
+                    <input type="password" class="form-control" placeholder="••••••••" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Confirmar Contraseña</label>
+                    <input type="password" class="form-control" placeholder="••••••••" required>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-register w-100 text-white shadow">
+                Crear mi cuenta
+            </button>
+        </form>
+
+        <div class="text-center mt-4 pt-3 border-top">
+            <p class="text-muted small">
+                ¿Ya tienes una cuenta?
+                <a asp-controller="Login" asp-action="Login" class="text-primary fw-bold text-decoration-none">Inicia Sesión</a>
+            </p>
+        </div>
+    </div>
+
+
+</div>

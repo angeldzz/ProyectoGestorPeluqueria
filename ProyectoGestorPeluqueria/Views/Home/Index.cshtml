@@ -1,0 +1,187 @@
+﻿<style>
+    /* Estilos específicos para complementar site.css */
+    .hero-section {
+        padding: 80px 0;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 30px;
+        margin-bottom: 50px;
+    }
+
+    .hero-title {
+        font-size: 3.5rem;
+        font-weight: 800;
+        color: #212529;
+        line-height: 1.2;
+    }
+
+    .card-salon {
+        border: none;
+        border-radius: 20px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        overflow: hidden;
+        background: #fff;
+    }
+
+        .card-salon:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1) !important;
+        }
+
+    .salon-img {
+        height: 200px;
+        object-fit: cover;
+    }
+
+    .btn-action {
+        border-radius: 12px;
+        padding: 12px 25px;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+
+    .coords-text {
+        font-size: 0.8rem;
+        color: #6c757d;
+        font-family: &#39;
+        Courier New&#39;
+        , Courier, monospace;
+    }
+
+    .badge-category {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: rgba(255,255,255,0.9);
+        color: #0d6efd;
+        font-weight: 700;
+        padding: 5px 15px;
+        border-radius: 50px;
+    }
+
+</style>
+
+<div class="container">
+    <!-- Hero Section -->
+    <section class="hero-section text-center text-lg-start">
+        <div class="row align-items-center px-4">
+            <div class="col-lg-6">
+                <h1 class="hero-title mb-4">Tu estilo, <span class="text-primary">tu momento.</span></h1>
+                <p class="lead mb-5 text-muted">
+                    La plataforma definitiva para gestionar tu negocio de belleza o reservar cita con los mejores estilistas de tu ciudad en pocos clics.
+                </p>
+                <div class="d-flex flex-column flex-md-row gap-3 justify-content-center justify-content-lg-start">
+                    <a href="#explorar" class="btn btn-primary btn-action shadow">
+                        <i class="fas fa-calendar-alt me-2"></i>Buscar Peluquería
+                    </a>
+                    <a asp-controller="Gestion" asp-action="RegistrarNegocio" class="btn btn-outline-dark btn-action">
+                        <i class="fas fa-store me-2"></i>Registrar mi Negocio
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-6 d-none d-lg-block">
+                <img src="https://imgs.search.brave.com/OyeDxnUSa2RYlPSlAj3HyTVGIs0NxbZDEptLcvHfUbM/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9zZXJl/bmFiZWF1dHlzYWxv/bi5jb20vd3AtY29u/dGVudC91cGxvYWRz/LzIwMjEvMTAvNjM5/ODQ1LVBPS0dVVS01/Ni53ZWJw"
+                     alt="Salon" class="img-fluid rounded-5 shadow-lg">
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección de Peluquerías (Campos de BBDD) -->
+    <section id="explorar" class="py-5">
+        <div class="d-flex justify-content-between align-items-end mb-5">
+            <div>
+                <h2 class="fw-bold">Peluquerías destacadas</h2>
+                <p class="text-muted">Descubre los locales mejor valorados de la zona</p>
+            </div>
+            <a href="#" class="btn btn-link text-decoration-none fw-bold">Ver todas <i class="fas fa-arrow-right ms-1"></i></a>
+        </div>
+
+        <div class="row g-4">
+            <!-- Ejemplo 1 -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card card-salon shadow-sm h-100">
+                    <div class="position-relative">
+                        <img src="https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?q=80&w=1170&auto=format&fit=crop" class="card-img-top salon-img" alt="Logo Peluquería">
+                        <span class="badge-category shadow-sm">Premium</span>
+                    </div>
+                    <div class="card-body p-4">
+                        <h5 class="card-title fw-bold mb-2">Vintage Barber Studio</h5>
+                        <p class="card-text text-muted mb-3" style="font-size: 0.9rem;">
+                            Especialistas en cortes clásicos, afeitado a navaja y cuidado de la barba con productos orgánicos.
+                        </p>
+                        <div class="mb-3">
+                            <div class="d-flex align-items-center mb-1">
+                                <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                                <span class="small fw-medium">Calle Mayor 12, Madrid</span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-compass text-muted me-2"></i>
+                                <span class="coords-text">40.4167° N, 3.7037° W</span>
+                            </div>
+                        </div>
+                        <a href="#" class="btn btn-outline-primary w-100 fw-bold py-2">
+                            Ver Peluquería
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ejemplo 2 -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card card-salon shadow-sm h-100">
+                    <div class="position-relative">
+                        <img src="https://images.unsplash.com/photo-1562322140-8baeececf3df?q=80&w=1169&auto=format&fit=crop" class="card-img-top salon-img" alt="Logo Peluquería">
+                        <span class="badge-category shadow-sm">Estética</span>
+                    </div>
+                    <div class="card-body p-4">
+                        <h5 class="card-title fw-bold mb-2">Elegance Hair & Spa</h5>
+                        <p class="card-text text-muted mb-3" style="font-size: 0.9rem;">
+                            Un espacio dedicado a la mujer moderna. Colorimetría avanzada y tratamientos de hidratación profunda.
+                        </p>
+                        <div class="mb-3">
+                            <div class="d-flex align-items-center mb-1">
+                                <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                                <span class="small fw-medium">Av. Diagonal 450, Barcelona</span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-compass text-muted me-2"></i>
+                                <span class="coords-text">41.3947° N, 2.1487° E</span>
+                            </div>
+                        </div>
+                        <a href="#" class="btn btn-outline-primary w-100 fw-bold py-2">
+                            Ver Peluquería
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ejemplo 3 -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card card-salon shadow-sm h-100">
+                    <div class="position-relative">
+                        <img src="https://images.unsplash.com/photo-1599351431202-1e0f0137899a?q=80&w=688&auto=format&fit=crop" class="card-img-top salon-img" alt="Logo Peluquería">
+                        <span class="badge-category shadow-sm">Unisex</span>
+                    </div>
+                    <div class="card-body p-4">
+                        <h5 class="card-title fw-bold mb-2">Urban Cut & Color</h5>
+                        <p class="card-text text-muted mb-3" style="font-size: 0.9rem;">
+                            Estilo urbano y vanguardista. Nos adaptamos a las últimas tendencias en cortes y peinados para todos.
+                        </p>
+                        <div class="mb-3">
+                            <div class="d-flex align-items-center mb-1">
+                                <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                                <span class="small fw-medium">Calle Colon 5, Valencia</span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-compass text-muted me-2"></i>
+                                <span class="coords-text">39.4697° N, 0.3774° W</span>
+                            </div>
+                        </div>
+                        <a href="#" class="btn btn-outline-primary w-100 fw-bold py-2">
+                            Ver Peluquería
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
