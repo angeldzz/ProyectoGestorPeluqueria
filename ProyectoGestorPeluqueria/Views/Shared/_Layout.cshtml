@@ -67,14 +67,33 @@
                     </ul>
 
                     <ul class="navbar-nav ms-auto align-items-center">
-                        <li class="nav-item me-2">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Login" asp-action="Registrarse">Registrarse</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="btn btn-outline-primary btn-login" asp-area="" asp-controller="Login" asp-action="Login">
-                                <i class="fas fa-user-circle me-1"></i> Iniciar Sesión
-                            </a>
-                        </li>
+                        @{
+                            var usuarioSession = Context.Session.GetObject<Usuario>("usuario");
+                        }
+                        @if (usuarioSession != null)
+                        {
+                            <li class="nav-item me-2">
+                                <span class="nav-link text-dark fw-semibold">
+                                    <i class="fas fa-user-circle me-1 text-primary"></i>@usuarioSession.Nombre
+                                </span>
+                            </li>
+                            <li class="nav-item">
+                                <a class="btn btn-outline-danger btn-login" asp-area="" asp-controller="Login" asp-action="Logout">
+                                    <i class="fas fa-sign-out-alt me-1"></i> Cerrar Sesión
+                                </a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item me-2">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Login" asp-action="Registrarse">Registrarse</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="btn btn-outline-primary btn-login" asp-area="" asp-controller="Login" asp-action="Login">
+                                    <i class="fas fa-user-circle me-1"></i> Iniciar Sesión
+                                </a>
+                            </li>
+                        }
                     </ul>
                 </div>
             </div>

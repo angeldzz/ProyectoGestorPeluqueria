@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using MvcCoreSessionEmpleados.Extensions;
+using ProyectoGestorPeluqueria.Extensions;
 using ProyectoGestorPeluqueria.Models;
 using ProyectoGestorPeluqueria.Repositories;
 
@@ -49,6 +49,12 @@ namespace ProyectoGestorPeluqueria.Controllers
 
             int rolId = role == "Empresario" ? 2 : 3;
             await this.repo.CreateUsuarioAsync(nombre, password, email, telefono, rolId);
+            return RedirectToAction("Login");
+        }
+
+        public IActionResult Logout()
+        {
+            HttpContext.Session.Remove("usuario");
             return RedirectToAction("Login");
         }
     }

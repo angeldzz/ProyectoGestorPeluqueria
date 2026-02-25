@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace MvcCoreSessionEmpleados.Extensions
+namespace ProyectoGestorPeluqueria.Extensions
 {
     public static class SessionExtension
     {
