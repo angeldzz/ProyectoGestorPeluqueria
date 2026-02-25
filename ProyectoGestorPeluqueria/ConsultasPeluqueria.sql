@@ -171,7 +171,7 @@ GO
 --VIEWS
 ------------------------------------------
 
-CREATE VIEW VW_MENSAJES_DETALLE AS
+CREATE OR ALTER VIEW VW_MENSAJES_DETALLE AS
 SELECT
     m.MensajeID,
     m.HoraCreacion,
@@ -189,6 +189,7 @@ INNER JOIN dbo.USUARIOS    AS u   ON u.UsuarioID    = m.UsuarioID
 INNER JOIN dbo.PELUQUERIAS AS p   ON p.PeluqueriaID = m.PeluqueriaID
 LEFT  JOIN dbo.CITAS       AS c   ON c.CitaID        = m.CitaID
 LEFT  JOIN dbo.ESTADOS_CITA AS ec ON ec.EstadoID     = c.EstadoID;
+GO
 
 CREATE OR ALTER VIEW VW_USUARIOS_CREDENCIALES AS
 SELECT
@@ -201,7 +202,7 @@ SELECT
 FROM dbo.USUARIOS            AS u
 INNER JOIN dbo.ROLES          AS r  ON r.RolID      = u.RolID
 INNER JOIN dbo.USUARIOS_SECURITY AS us ON us.UsuarioID = u.UsuarioID;
-
+GO
 ------------------------------------------
 --SELECTS VIEWS
 ------------------------------------------
@@ -212,7 +213,7 @@ SELECT * FROM VW_USUARIOS_CREDENCIALES;
 ------------------------------------------
 --STORED PROCEDURES
 ------------------------------------------
-
+GO
 CREATE OR ALTER PROCEDURE SP_REGISTRAR_USUARIO
     @Nombre    NVARCHAR(100),
     @Password  NVARCHAR(100),
