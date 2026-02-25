@@ -112,19 +112,19 @@
     <div class="card register-card p-4 p-md-5">
         <div class="text-center mb-5"> <h2 class="fw-bold">Únete a GlowStyle</h2> <p class="text-muted">Comienza a gestionar tus citas hoy mismo</p> </div>
 
-        <form asp-controller="Account" asp-action="Register" method="post">
+        <form asp-controller="Login" asp-action="Registrarse" method="post">
 
             <div class="form-section-title">Elige tu perfil</div>
             <div class="role-selector">
                 <label class="role-option">
-                    <input type="radio" name="Role" value="Cliente" checked>
+                    <input type="radio" name="role" value="Cliente" checked>
                     <div class="role-card">
                         <i class="fas fa-user"></i>
                         <span>Soy Cliente</span>
                     </div>
                 </label>
                 <label class="role-option">
-                    <input type="radio" name="Role" value="Empresario">
+                    <input type="radio" name="role" value="Empresario">
                     <div class="role-card">
                         <i class="fas fa-briefcase"></i>
                         <span>Soy Dueño</span>
@@ -136,31 +136,35 @@
             <div class="row g-3">
                 <div class="col-md-6 mb-3">
                     <label class="form-label">Nombre Completo</label>
-                    <input type="text" class="form-control" placeholder="Juan Pérez" required>
+                    <input type="text" name="nombre" class="form-control" placeholder="Juan Pérez" required>
                 </div>
                 <div class="col-md-6 mb-3">
                     <label class="form-label">Teléfono</label>
-                    <input type="tel" class="form-control" placeholder="600 000 000">
+                    <input type="tel" name="telefono" class="form-control" placeholder="600 000 000">
                 </div>
             </div>
 
             <div class="mb-3">
                 <label class="form-label">Correo Electrónico</label>
-                <input type="email" class="form-control" placeholder="nombre@correo.com" required>
+                <input type="email" name="email" class="form-control" placeholder="nombre@correo.com" required>
             </div>
 
             <div class="form-section-title mt-4">Seguridad</div>
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Contraseña</label>
-                    <input type="password" class="form-control" placeholder="••••••••" required>
+                    <input type="password" name="password" class="form-control" placeholder="••••••••" required>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Confirmar Contraseña</label>
-                    <input type="password" class="form-control" placeholder="••••••••" required>
+                    <input type="password" name="confirmarPassword" class="form-control" placeholder="••••••••" required>
                 </div>
             </div>
 
+            @if (ViewBag.Error != null)
+            {
+                <div class="alert alert-danger py-2 mb-3">@ViewBag.Error</div>
+            }
             <button type="submit" class="btn btn-primary btn-register w-100 text-white shadow">
                 Crear mi cuenta
             </button>

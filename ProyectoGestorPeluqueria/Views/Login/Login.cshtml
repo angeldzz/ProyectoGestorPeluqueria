@@ -97,14 +97,14 @@
             <p class="text-muted">Ingresa tus credenciales para acceder</p>
         </div>
         <div class="auth-body">
-            <form asp-controller="Account" asp-action="Login" method="post">
+            <form asp-controller="Login" asp-action="Login" method="post">
                 <div class="mb-3">
                     <label class="form-label">Correo Electrónico</label>
                     <div class="input-group">
                         <span class="input-group-text bg-light border-end-0" style="border-radius: 12px 0 0 12px; border: 1.5px solid #e2e8f0;">
                             <i class="fas fa-envelope text-muted"></i>
                         </span>
-                        <input type="email" class="form-control border-start-0" placeholder="ejemplo@correo.com" required style="border-radius: 0 12px 12px 0;">
+                        <input type="email" name="email" class="form-control border-start-0" placeholder="ejemplo@correo.com" required style="border-radius: 0 12px 12px 0;">
                     </div>
                 </div>
                 <div class="mb-4">
@@ -116,9 +116,13 @@
                         <span class="input-group-text bg-light border-end-0" style="border-radius: 12px 0 0 12px; border: 1.5px solid #e2e8f0;">
                             <i class="fas fa-lock text-muted"></i>
                         </span>
-                        <input type="password" class="form-control border-start-0" placeholder="••••••••" required style="border-radius: 0 12px 12px 0;">
+                        <input type="password" name="password" class="form-control border-start-0" placeholder="••••••••" required style="border-radius: 0 12px 12px 0;">
                     </div>
                 </div>
+                @if (ViewBag.Error != null)
+                {
+                    <div class="alert alert-danger py-2 mb-3">@ViewBag.Error</div>
+                }
                 <button type="submit" class="btn btn-primary btn-auth w-100 shadow-sm">
                     Iniciar Sesión
                 </button>

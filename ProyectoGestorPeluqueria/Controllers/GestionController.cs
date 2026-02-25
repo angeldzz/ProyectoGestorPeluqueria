@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace ProyectoGestorPeluqueria.wwwroot
+namespace ProyectoGestorPeluqueria.Controllers
 {
     public class GestionController : Controller
     {
