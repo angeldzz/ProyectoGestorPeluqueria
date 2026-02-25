@@ -276,15 +276,6 @@ BEGIN
     END CATCH
 END;
 
-EXEC dbo.SP_REGISTRAR_USUARIO
-    @Nombre   = 'Juan García',
-    @Password = 'textoPlano123',   -- reemplazar por lógica en la app
-    @Email    = 'juan@ejemplo.com',
-    @Telefono = '612345678',
-    @RolID    = 3,
-    @Pass     = 0x243262243132...,  -- hash generado por la app
-    @Salt     = 'xK9mPqRsTuVwXyZ1';
-
 ------------------------------------------
 --SELECTS GENERALES
 ------------------------------------------
