@@ -37,17 +37,19 @@ public partial class ProyectopeluqueriaContext : DbContext
 
     public virtual DbSet<VwMensajesDetalle> VwMensajesDetalles { get; set; }
 
+    public virtual DbSet<VwPeluqueriaDuenoServicio> VwPeluqueriaDuenoServicios { get; set; }
+
     public virtual DbSet<VwUsuariosCredenciale> VwUsuariosCredenciales { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Data Source=LOCALHOST\\DEVELOPER;Initial Catalog=PROYECTOPELUQUERIA;User ID=sa;Password=;Trust Server Certificate=True");
+        => optionsBuilder.UseSqlServer("Server=.\\DEVELOPER;Database=PROYECTOPELUQUERIA;User ID=sa;Password=;TrustServerCertificate=True");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Cita>(entity =>
         {
-            entity.HasKey(e => e.CitaId).HasName("PK__CITAS__F0E2D9F2BADECCF5");
+            entity.HasKey(e => e.CitaId).HasName("PK__CITAS__F0E2D9F279E3136D");
 
             entity.ToTable("CITAS");
 
@@ -78,7 +80,7 @@ public partial class ProyectopeluqueriaContext : DbContext
 
         modelBuilder.Entity<Empleado>(entity =>
         {
-            entity.HasKey(e => e.EmpleadoId).HasName("PK__EMPLEADO__958BE6F0A9A93CD3");
+            entity.HasKey(e => e.EmpleadoId).HasName("PK__EMPLEADO__958BE6F0107E1D64");
 
             entity.ToTable("EMPLEADOS");
 
@@ -97,7 +99,7 @@ public partial class ProyectopeluqueriaContext : DbContext
 
         modelBuilder.Entity<EstadosCitum>(entity =>
         {
-            entity.HasKey(e => e.EstadoId).HasName("PK__ESTADOS___FEF86B60B2F1D46E");
+            entity.HasKey(e => e.EstadoId).HasName("PK__ESTADOS___FEF86B6053712EAA");
 
             entity.ToTable("ESTADOS_CITA");
 
@@ -109,24 +111,23 @@ public partial class ProyectopeluqueriaContext : DbContext
 
         modelBuilder.Entity<HorariosEmpleado>(entity =>
         {
-            entity.HasKey(e => e.HorarioId).HasName("PK__HORARIOS__BB881A9EB01C0B00");
+            entity.HasKey(e => e.HorarioId).HasName("PK_Horarios");
 
             entity.ToTable("HORARIOS_EMPLEADO");
 
-            entity.Property(e => e.HorarioId)
-                .ValueGeneratedNever()
-                .HasColumnName("HorarioID");
+            entity.Property(e => e.HorarioId).HasColumnName("HorarioID");
             entity.Property(e => e.EmpleadoId).HasColumnName("EmpleadoID");
+            entity.Property(e => e.FechaHoraApertura).HasColumnType("datetime");
+            entity.Property(e => e.FechaHoraCierre).HasColumnType("datetime");
 
             entity.HasOne(d => d.Empleado).WithMany(p => p.HorariosEmpleados)
                 .HasForeignKey(d => d.EmpleadoId)
-                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_Horarios_Empleados");
         });
 
         modelBuilder.Entity<Mensaje>(entity =>
         {
-            entity.HasKey(e => e.MensajeId).HasName("PK__MENSAJES__FEA0557F0177A922");
+            entity.HasKey(e => e.MensajeId).HasName("PK__MENSAJES__FEA0557FA3EA0C90");
 
             entity.ToTable("MENSAJES");
 
@@ -154,7 +155,7 @@ public partial class ProyectopeluqueriaContext : DbContext
 
         modelBuilder.Entity<Peluqueria>(entity =>
         {
-            entity.HasKey(e => e.PeluqueriaId).HasName("PK__PELUQUER__DBB815D1AF706E69");
+            entity.HasKey(e => e.PeluqueriaId).HasName("PK__PELUQUER__DBB815D1B3DCD8A6");
 
             entity.ToTable("PELUQUERIAS");
 
@@ -173,7 +174,7 @@ public partial class ProyectopeluqueriaContext : DbContext
 
         modelBuilder.Entity<Role>(entity =>
         {
-            entity.HasKey(e => e.RolId).HasName("PK__ROLES__F92302D1C7C3C706");
+            entity.HasKey(e => e.RolId).HasName("PK__ROLES__F92302D1AAB75F5E");
 
             entity.ToTable("ROLES");
 
@@ -185,7 +186,7 @@ public partial class ProyectopeluqueriaContext : DbContext
 
         modelBuilder.Entity<Servicio>(entity =>
         {
-            entity.HasKey(e => e.ServicioId).HasName("PK__SERVICIO__D5AEEC2228A61C40");
+            entity.HasKey(e => e.ServicioId).HasName("PK__SERVICIO__D5AEEC2221D53AFF");
 
             entity.ToTable("SERVICIOS");
 
@@ -204,11 +205,11 @@ public partial class ProyectopeluqueriaContext : DbContext
 
         modelBuilder.Entity<Usuario>(entity =>
         {
-            entity.HasKey(e => e.UsuarioId).HasName("PK__USUARIOS__2B3DE798EE583427");
+            entity.HasKey(e => e.UsuarioId).HasName("PK__USUARIOS__2B3DE7989A2A6540");
 
             entity.ToTable("USUARIOS");
 
-            entity.HasIndex(e => e.Email, "UQ__USUARIOS__AB6E61643A265A0A").IsUnique();
+            entity.HasIndex(e => e.Email, "UQ__USUARIOS__AB6E6164D200C789").IsUnique();
 
             entity.Property(e => e.UsuarioId)
                 .ValueGeneratedNever()
@@ -217,7 +218,7 @@ public partial class ProyectopeluqueriaContext : DbContext
                 .HasMaxLength(100)
                 .HasColumnName("email");
             entity.Property(e => e.Nombre).HasMaxLength(100);
-            entity.Property(e => e.Password).HasMaxLength(255);
+            entity.Property(e => e.Password).HasMaxLength(100);
             entity.Property(e => e.RolId).HasColumnName("RolID");
             entity.Property(e => e.Telefono)
                 .HasMaxLength(20)
@@ -230,7 +231,7 @@ public partial class ProyectopeluqueriaContext : DbContext
 
         modelBuilder.Entity<UsuariosSecurity>(entity =>
         {
-            entity.HasKey(e => e.UsuarioId).HasName("PK__USUARIOS__2B3DE798BF0C6ECD");
+            entity.HasKey(e => e.UsuarioId).HasName("PK__USUARIOS__2B3DE7983489979B");
 
             entity.ToTable("USUARIOS_SECURITY");
 
@@ -258,6 +259,25 @@ public partial class ProyectopeluqueriaContext : DbContext
             entity.Property(e => e.MensajeId).HasColumnName("MensajeID");
             entity.Property(e => e.NombrePeluqueria).HasMaxLength(100);
             entity.Property(e => e.NombreUsuario).HasMaxLength(100);
+        });
+
+        modelBuilder.Entity<VwPeluqueriaDuenoServicio>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("VW_PELUQUERIA_DUENO_SERVICIOS");
+
+            entity.Property(e => e.Coordenadas).HasMaxLength(100);
+            entity.Property(e => e.Direccion).HasMaxLength(255);
+            entity.Property(e => e.DuenoId).HasColumnName("DuenoID");
+            entity.Property(e => e.EmailDueno).HasMaxLength(100);
+            entity.Property(e => e.NombreDueno).HasMaxLength(100);
+            entity.Property(e => e.NombrePeluqueria).HasMaxLength(100);
+            entity.Property(e => e.NombreServicio).HasMaxLength(100);
+            entity.Property(e => e.PeluqueriaId).HasColumnName("PeluqueriaID");
+            entity.Property(e => e.Precio).HasColumnType("decimal(10, 2)");
+            entity.Property(e => e.ServicioId).HasColumnName("ServicioID");
+            entity.Property(e => e.TelefonoDueno).HasMaxLength(20);
         });
 
         modelBuilder.Entity<VwUsuariosCredenciale>(entity =>

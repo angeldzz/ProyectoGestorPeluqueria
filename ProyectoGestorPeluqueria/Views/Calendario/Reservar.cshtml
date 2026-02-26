@@ -1,0 +1,255 @@
+@model VwPeluqueriaDuenoServicio
+
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet" />
+
+@{
+    ViewData["Title"] = "Reservar Cita - " + Model.NombrePeluqueria;
+    var empleados = ViewBag.Empleados as List<Empleado> ?? new List<Empleado>();
+    var servicios = ViewBag.Servicios as List<Servicio> ?? new List<Servicio>();
+    var clienteId = ViewBag.ClienteId is int cId ? cId : 0;
+}
+
+<style>
+    #calendar {
+        background: white;
+        border-radius: 16px;
+        padding: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
+    }
+
+    .leyenda-dot {
+        display: inline-block;
+        width: 13px;
+        height: 13px;
+        border-radius: 50%;
+        vertical-align: middle;
+        margin-right: 4px;
+    }
+</style>
+
+<div class="py-4">
+
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a asp-controller="Home" asp-action="Index" class="text-decoration-none">
+                    <i class="fas fa-home me-1"></i>Inicio
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a asp-controller="Gestion" asp-action="DetailsPeluqueria" asp-route-id="@Model.PeluqueriaId" class="text-decoration-none">
+                    @Model.NombrePeluqueria
+                </a>
+            </li>
+            <li class="breadcrumb-item active">Reservar Cita</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex flex-wrap align-items-center justify-content-between mb-3 gap-3">
+        <div>
+            <h2 class="fw-bold mb-0">
+                <i class="fas fa-calendar-plus me-2 text-primary"></i>Reservar Cita
+            </h2>
+            <p class="text-muted small mb-0">@Model.NombrePeluqueria · Haz clic en un hueco disponible para reservar</p>
+        </div>
+        <div class="d-flex gap-2 flex-wrap align-items-center">
+            <select id="filtroEmpleado" class="form-select form-select-sm" style="min-width:180px;"
+                    onchange="calendar && calendar.refetchEvents()">
+                <option value="">Todos los empleados</option>
+                @foreach (var emp in empleados)
+                {
+                    <option value="@emp.EmpleadoId">@emp.Nombre</option>
+                }
+            </select>
+        </div>
+    </div>
+
+    <div class="mb-3 d-flex flex-wrap gap-3 small text-secondary">
+        <span><span class="leyenda-dot" style="background:#86efac; border:1px solid #4ade80;"></span>Disponible (clic para reservar)</span>
+        <span><span class="leyenda-dot" style="background:#4f46e5;"></span>Tu cita</span>
+        <span><span class="leyenda-dot" style="background:#cbd5e1; border:1px solid #94a3b8;"></span>Ocupado</span>
+    </div>
+
+    <div id="calendar"></div>
+
+</div>
+
+<!-- Modal: Reservar Cita -->
+<div class="modal fade" id="modalReservar" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow rounded-4">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">
+                    <i class="fas fa-calendar-check me-2 text-primary"></i>Nueva Reserva
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold small">Empleado</label>
+                    <select class="form-select" id="resEmpleado">
+                        @foreach (var emp in empleados)
+                        {
+                            <option value="@emp.EmpleadoId">@emp.Nombre</option>
+                        }
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold small">Servicio</label>
+                    <select class="form-select" id="resServicio" onchange="actualizarFin()">
+                        @foreach (var s in servicios)
+                        {
+                            <option value="@s.ServicioId" data-duracion="@s.DuracionMin">
+                                @s.Nombre (@s.DuracionMin min) — @s.Precio.ToString("C")
+                            </option>
+                        }
+                    </select>
+                </div>
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <label class="form-label fw-semibold small">Inicio</label>
+                        <input type="datetime-local" class="form-control" id="resInicio" onchange="actualizarFin()" />
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label fw-semibold small">Fin (estimado)</label>
+                        <input type="datetime-local" class="form-control bg-light" id="resFin" readonly />
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold small">Notas (opcional)</label>
+                    <textarea class="form-control" id="resNotas" rows="2" placeholder="Ej: preferencias, alergias..."></textarea>
+                </div>
+                <div id="resError" class="alert alert-danger py-2 small d-none"></div>
+                <div id="resSuccess" class="alert alert-success py-2 small d-none">
+                    <i class="fas fa-check-circle me-1"></i>¡Cita reservada con éxito!
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary btn-sm fw-semibold" id="btnConfirmar" onclick="confirmarReserva()">
+                    <i class="fas fa-check me-1"></i>Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/locales/es.global.min.js"></script>
+    <script>
+        const peluqueriaId = @Model.PeluqueriaId;
+        const clienteIdActual = @clienteId;
+        let calendar;
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const calendarEl = document.getElementById('calendar');
+            calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'timeGridWeek',
+                locale: 'es',
+                firstDay: 1,
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                buttonText: { today: 'Hoy', month: 'Mes', week: 'Semana', day: 'Día' },
+                slotMinTime: '07:00:00',
+                slotMaxTime: '22:00:00',
+                slotDuration: '00:30:00',
+                allDaySlot: false,
+                nowIndicator: true,
+                height: 'auto',
+                dateClick: function (info) {
+                    abrirModalReservar(info.dateStr);
+                },
+                events: function (info, successCallback, failureCallback) {
+                    const emp = document.getElementById('filtroEmpleado').value;
+                    const url = `/Calendario/GetEventos?peluqueriaId=${peluqueriaId}` +
+                        `&start=${encodeURIComponent(info.startStr)}` +
+                        `&end=${encodeURIComponent(info.endStr)}` +
+                        (emp ? `&empleadoId=${emp}` : '');
+                    fetch(url)
+                        .then(r => {
+                            if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                            return r.json();
+                        })
+                        .then(data => {
+                            data.forEach(ev => {
+                                if (ev.extendedProps && ev.extendedProps.type === 'cita') {
+                                    if (ev.extendedProps.clienteId === clienteIdActual) {
+                                        ev.backgroundColor = '#4f46e5';
+                                        ev.borderColor = '#4338ca';
+                                        ev.title = `Tu cita · ${ev.extendedProps.servicio || ''}`;
+                                    } else {
+                                        ev.title = 'Ocupado';
+                                        ev.backgroundColor = '#cbd5e1';
+                                        ev.borderColor = '#94a3b8';
+                                    }
+                                }
+                            });
+                            successCallback(data);
+                        })
+                        .catch(err => failureCallback(err instanceof Error ? err : new Error(String(err))));
+                }
+            });
+            calendar.render();
+        });
+
+        function abrirModalReservar(dateStr) {
+            document.getElementById('resInicio').value = dateStr.substring(0, 16);
+            document.getElementById('resError').classList.add('d-none');
+            document.getElementById('resSuccess').classList.add('d-none');
+            document.getElementById('btnConfirmar').disabled = false;
+            const empFiltro = document.getElementById('filtroEmpleado').value;
+            if (empFiltro) document.getElementById('resEmpleado').value = empFiltro;
+            actualizarFin();
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('modalReservar')).show();
+        }
+
+        function actualizarFin() {
+            const inicio = document.getElementById('resInicio').value;
+            const select = document.getElementById('resServicio');
+            const duracion = parseInt(select.options[select.selectedIndex]?.dataset?.duracion || '30');
+            if (inicio) {
+                const fin = new Date(new Date(inicio).getTime() + duracion * 60000);
+                document.getElementById('resFin').value = fin.toISOString().substring(0, 16);
+            }
+        }
+
+        async function confirmarReserva() {
+            const empleadoId = parseInt(document.getElementById('resEmpleado').value);
+            const servicioId = parseInt(document.getElementById('resServicio').value);
+            const inicio = document.getElementById('resInicio').value;
+            const notas = document.getElementById('resNotas').value;
+            const errEl = document.getElementById('resError');
+            errEl.classList.add('d-none');
+
+            if (!inicio) {
+                errEl.textContent = 'Selecciona una fecha y hora de inicio.';
+                errEl.classList.remove('d-none');
+                return;
+            }
+
+            document.getElementById('btnConfirmar').disabled = true;
+            const resp = await fetch('/Calendario/CrearCita', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ empleadoId, servicioId, inicio, notas })
+            });
+
+            if (resp.ok) {
+                document.getElementById('resSuccess').classList.remove('d-none');
+                setTimeout(() => {
+                    bootstrap.Modal.getInstance(document.getElementById('modalReservar')).hide();
+                    calendar.refetchEvents();
+                }, 1500);
+            } else {
+                const data = await resp.json().catch(() => ({}));
+                errEl.textContent = data.error || 'El empleado no está disponible en ese horario.';
+                errEl.classList.remove('d-none');
+                document.getElementById('btnConfirmar').disabled = false;
+            }
+        }
+    </script>
+}

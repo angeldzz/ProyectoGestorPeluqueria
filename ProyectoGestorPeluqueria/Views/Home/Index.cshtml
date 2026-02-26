@@ -1,4 +1,5 @@
-﻿<style>
+﻿@model List<VwPeluqueriaDuenoServicio>
+<style>
     /* Estilos específicos para complementar site.css */
     .hero-section {
         padding: 80px 0;
@@ -59,7 +60,9 @@
     }
 
 </style>
-
+@{
+    var usuarioSession = Context.Session.GetObject<Usuario>("usuario");
+}
 <div class="container">
     <!-- Hero Section -->
     <section class="hero-section text-center text-lg-start">
@@ -70,12 +73,30 @@
                     La plataforma definitiva para gestionar tu negocio de belleza o reservar cita con los mejores estilistas de tu ciudad en pocos clics.
                 </p>
                 <div class="d-flex flex-column flex-md-row gap-3 justify-content-center justify-content-lg-start">
-                    <a href="#explorar" class="btn btn-primary btn-action shadow">
-                        <i class="fas fa-calendar-alt me-2"></i>Buscar Peluquería
-                    </a>
-                    <a asp-controller="Gestion" asp-action="RegistrarNegocio" class="btn btn-outline-dark btn-action">
-                        <i class="fas fa-store me-2"></i>Registrar mi Negocio
-                    </a>
+                    @if (usuarioSession != null)
+                    {
+                        @if (usuarioSession.RolId == 2)
+                        {
+                            <a asp-controller="Gestion" asp-action="RegistrarNegocio" class="btn btn-outline-dark btn-action">
+                                <i class="fas fa-store me-2"></i>Registrar mi Negocio
+                            </a>
+                        }
+                        else if (usuarioSession.RolId == 3)
+                        {
+                            <a href="#explorar" class="btn btn-primary btn-action shadow">
+                                <i class="fas fa-calendar-alt me-2"></i>Buscar Peluquería
+                            </a>
+                        }
+                    }
+                    else
+                    {
+                        <a asp-controller="Login" asp-action="Login" class="btn btn-outline-dark btn-action">
+                            <i class="fas fa-store me-2"></i>Registrar mi Negocio
+                        </a>
+                        <a asp-controller="Login" asp-action="Login" class="btn btn-outline-dark btn-action">
+                            <i class="fas fa-calendar-alt me-2"></i>Buscar Peluquería
+                        </a>
+                    }
                 </div>
             </div>
             <div class="col-lg-6 d-none d-lg-block">
@@ -87,101 +108,152 @@
 
     <!-- Sección de Peluquerías (Campos de BBDD) -->
     <section id="explorar" class="py-5">
-        <div class="d-flex justify-content-between align-items-end mb-5">
-            <div>
-                <h2 class="fw-bold">Peluquerías destacadas</h2>
-                <p class="text-muted">Descubre los locales mejor valorados de la zona</p>
-            </div>
-            <a href="#" class="btn btn-link text-decoration-none fw-bold">Ver todas <i class="fas fa-arrow-right ms-1"></i></a>
-        </div>
-
-        <div class="row g-4">
-            <!-- Ejemplo 1 -->
-            <div class="col-md-6 col-lg-4">
-                <div class="card card-salon shadow-sm h-100">
-                    <div class="position-relative">
-                        <img src="https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?q=80&w=1170&auto=format&fit=crop" class="card-img-top salon-img" alt="Logo Peluquería">
-                        <span class="badge-category shadow-sm">Premium</span>
-                    </div>
-                    <div class="card-body p-4">
-                        <h5 class="card-title fw-bold mb-2">Vintage Barber Studio</h5>
-                        <p class="card-text text-muted mb-3" style="font-size: 0.9rem;">
-                            Especialistas en cortes clásicos, afeitado a navaja y cuidado de la barba con productos orgánicos.
-                        </p>
-                        <div class="mb-3">
-                            <div class="d-flex align-items-center mb-1">
-                                <i class="fas fa-map-marker-alt text-primary me-2"></i>
-                                <span class="small fw-medium">Calle Mayor 12, Madrid</span>
-                            </div>
-                            <div class="d-flex align-items-center">
-                                <i class="fas fa-compass text-muted me-2"></i>
-                                <span class="coords-text">40.4167° N, 3.7037° W</span>
-                            </div>
-                        </div>
-                        <a href="#" class="btn btn-outline-primary w-100 fw-bold py-2">
-                            Ver Peluquería
-                        </a>
-                    </div>
+        @if (Model != null)
+        {
+            <div class="d-flex justify-content-between align-items-end mb-4">
+                <div>
+                    <h2 class="fw-bold">Peluquerías destacadas</h2>
+                    <p class="text-muted">Descubre los locales mejor valorados de la zona</p>
                 </div>
+                <a href="#" class="btn btn-link text-decoration-none fw-bold">Ver todas <i class="fas fa-arrow-right ms-1"></i></a>
             </div>
 
-            <!-- Ejemplo 2 -->
-            <div class="col-md-6 col-lg-4">
-                <div class="card card-salon shadow-sm h-100">
-                    <div class="position-relative">
-                        <img src="https://images.unsplash.com/photo-1562322140-8baeececf3df?q=80&w=1169&auto=format&fit=crop" class="card-img-top salon-img" alt="Logo Peluquería">
-                        <span class="badge-category shadow-sm">Estética</span>
-                    </div>
-                    <div class="card-body p-4">
-                        <h5 class="card-title fw-bold mb-2">Elegance Hair & Spa</h5>
-                        <p class="card-text text-muted mb-3" style="font-size: 0.9rem;">
-                            Un espacio dedicado a la mujer moderna. Colorimetría avanzada y tratamientos de hidratación profunda.
-                        </p>
-                        <div class="mb-3">
-                            <div class="d-flex align-items-center mb-1">
-                                <i class="fas fa-map-marker-alt text-primary me-2"></i>
-                                <span class="small fw-medium">Av. Diagonal 450, Barcelona</span>
+            <form method="get" asp-controller="Home" asp-action="Index" class="mb-5">
+                <div class="input-group shadow-sm" style="max-width: 480px;">
+                    <span class="input-group-text bg-white border-end-0">
+                        <i class="fas fa-search text-muted"></i>
+                    </span>
+                    <input type="text" name="buscar" value="@ViewBag.Buscar"
+                           class="form-control border-start-0 ps-0"
+                           placeholder="Buscar peluquería por nombre o dirección..." />
+                    <button class="btn btn-primary" type="submit">Buscar</button>
+                    @if (!string.IsNullOrEmpty(ViewBag.Buscar as string))
+                    {
+                        <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary" title="Limpiar búsqueda">
+                            <i class="fas fa-times"></i>
+                        </a>
+                    }
+                </div>
+                @if (!string.IsNullOrEmpty(ViewBag.Buscar as string))
+                {
+                    <p class="text-muted mt-2 small">
+                        @ViewBag.TotalResultados resultado(s) para "<strong>@ViewBag.Buscar</strong>"
+                    </p>
+                }
+            </form>
+
+            <div class="row g-4">
+                @foreach (var peluqueria in Model)
+                {
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card card-salon shadow-sm h-100">
+                            <div class="position-relative">
+                                <img src="@(peluqueria.UrlLogo ?? Url.Content("~/images/peluqueria-estandar.webp"))"
+                                     class="card-img-top salon-img"
+                                     alt="Logo @peluqueria.NombrePeluqueria"
+                                     onerror="this.onerror=null;this.src='@Url.Content("~/images/peluqueria-estandar.webp")';this.alt='';">
+                                @if (!string.IsNullOrEmpty(peluqueria.NombreServicio))
+                                {
+                                    <span class="badge-category shadow-sm">@peluqueria.NombreServicio</span>
+                                }
                             </div>
-                            <div class="d-flex align-items-center">
-                                <i class="fas fa-compass text-muted me-2"></i>
-                                <span class="coords-text">41.3947° N, 2.1487° E</span>
+                            <div class="card-body p-4">
+                                <h5 class="card-title fw-bold mb-2">@peluqueria.NombrePeluqueria</h5>
+                                <p class="card-text text-muted mb-3" style="font-size: 0.9rem;">
+                                    <i class="fas fa-user me-1"></i>@peluqueria.NombreDueno
+                                    @if (peluqueria.Precio.HasValue)
+                                    {
+                                        <span class="ms-2 fw-semibold text-primary">@peluqueria.Precio.Value.ToString("C")</span>
+                                    }
+                                    @if (peluqueria.DuracionMin.HasValue)
+                                    {
+                                        <span class="ms-2 text-muted">· @peluqueria.DuracionMin min</span>
+                                    }
+                                </p>
+                                <div class="mb-3">
+                                    @if (!string.IsNullOrEmpty(peluqueria.Direccion))
+                                    {
+                                        <div class="d-flex align-items-center mb-1">
+                                            <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                                            <span class="small fw-medium">@peluqueria.Direccion</span>
+                                        </div>
+                                    }
+                                    @if (!string.IsNullOrEmpty(peluqueria.Coordenadas))
+                                    {
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-compass text-muted me-2"></i>
+                                            <span class="coords-text">@peluqueria.Coordenadas</span>
+                                        </div>
+                                    }
+                                </div>
+                                <a asp-controller="Gestion" asp-action="DetailsPeluqueria" asp-route-id="@peluqueria.PeluqueriaId"
+                                   class="btn btn-outline-primary w-100 fw-bold py-2">
+                                    Ver Peluquería
+                                </a>
                             </div>
                         </div>
-                        <a href="#" class="btn btn-outline-primary w-100 fw-bold py-2">
-                            Ver Peluquería
-                        </a>
                     </div>
-                </div>
+                }
             </div>
 
-            <!-- Ejemplo 3 -->
-            <div class="col-md-6 col-lg-4">
-                <div class="card card-salon shadow-sm h-100">
-                    <div class="position-relative">
-                        <img src="https://images.unsplash.com/photo-1599351431202-1e0f0137899a?q=80&w=688&auto=format&fit=crop" class="card-img-top salon-img" alt="Logo Peluquería">
-                        <span class="badge-category shadow-sm">Unisex</span>
-                    </div>
-                    <div class="card-body p-4">
-                        <h5 class="card-title fw-bold mb-2">Urban Cut & Color</h5>
-                        <p class="card-text text-muted mb-3" style="font-size: 0.9rem;">
-                            Estilo urbano y vanguardista. Nos adaptamos a las últimas tendencias en cortes y peinados para todos.
-                        </p>
-                        <div class="mb-3">
-                            <div class="d-flex align-items-center mb-1">
-                                <i class="fas fa-map-marker-alt text-primary me-2"></i>
-                                <span class="small fw-medium">Calle Colon 5, Valencia</span>
-                            </div>
-                            <div class="d-flex align-items-center">
-                                <i class="fas fa-compass text-muted me-2"></i>
-                                <span class="coords-text">39.4697° N, 0.3774° W</span>
-                            </div>
-                        </div>
-                        <a href="#" class="btn btn-outline-primary w-100 fw-bold py-2">
-                            Ver Peluquería
-                        </a>
-                    </div>
+            @if (ViewBag.TotalPaginas > 1)
+            {
+                <nav class="mt-5 d-flex justify-content-center" aria-label="Paginación">
+                    <ul class="pagination pagination-lg">
+                        <li class="page-item @(ViewBag.PaginaActual <= 1 ? "disabled" : "")">
+                            <a class="page-link" asp-controller="Home" asp-action="Index"
+                               asp-route-pagina="@(ViewBag.PaginaActual - 1)"
+                               asp-route-buscar="@ViewBag.Buscar"
+                               asp-fragment="explorar">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        </li>
+                        @for (int i = 1; i <= (int)ViewBag.TotalPaginas; i++)
+                        {
+                            <li class="page-item @(ViewBag.PaginaActual == i ? "active" : "")">
+                                <a class="page-link" asp-controller="Home" asp-action="Index"
+                                   asp-route-pagina="@i"
+                                   asp-route-buscar="@ViewBag.Buscar"
+                                   asp-fragment="explorar">@i</a>
+                            </li>
+                        }
+                        <li class="page-item @(ViewBag.PaginaActual >= ViewBag.TotalPaginas ? "disabled" : "")">
+                            <a class="page-link" asp-controller="Home" asp-action="Index"
+                               asp-route-pagina="@(ViewBag.PaginaActual + 1)"
+                               asp-route-buscar="@ViewBag.Buscar"
+                               asp-fragment="explorar">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            }
+
+            @if (!Model.Any())
+            {
+                <div class="text-center py-5">
+                    <i class="fas fa-store-slash fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">No se encontraron peluquerías@(!string.IsNullOrEmpty(ViewBag.Buscar as string) ? $" para \"{ViewBag.Buscar}\"" : "").</h5>
+                    @if (!string.IsNullOrEmpty(ViewBag.Buscar as string))
+                    {
+                        <a asp-controller="Home" asp-action="Index" class="btn btn-outline-primary mt-2">Ver todas</a>
+                    }
                 </div>
-            </div>
-        </div>
+            }
+        }
     </section>
 </div>
+
+@section Scripts {
+    <script>
+        (function () {
+            var params = new URLSearchParams(window.location.search);
+            if (params.has('buscar') && !window.location.hash) {
+                var section = document.getElementById('explorar');
+                if (section) {
+                    section.scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+        })();
+    </script>
+}

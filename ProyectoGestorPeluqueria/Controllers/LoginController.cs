@@ -7,8 +7,8 @@ namespace ProyectoGestorPeluqueria.Controllers
 {
     public class LoginController : Controller
     {
-        private RepositoryUsuarios repo;
-        public LoginController(RepositoryUsuarios repo)
+        private IRepositoryUsuarios repo;
+        public LoginController(IRepositoryUsuarios repo)
         {
             this.repo = repo;
         }

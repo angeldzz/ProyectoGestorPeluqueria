@@ -1,0 +1,301 @@
+@model VwPeluqueriaDuenoServicio
+
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet" />
+
+@{
+    ViewData["Title"] = "Gestionar Agenda - " + Model.NombrePeluqueria;
+    var empleados = ViewBag.Empleados as List<Empleado> ?? new List<Empleado>();
+    var servicios = ViewBag.Servicios as List<Servicio> ?? new List<Servicio>();
+}
+
+<style>
+    #calendar {
+        background: white;
+        border-radius: 16px;
+        padding: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
+    }
+
+    .leyenda-dot {
+        display: inline-block;
+        width: 13px;
+        height: 13px;
+        border-radius: 50%;
+        vertical-align: middle;
+        margin-right: 4px;
+    }
+</style>
+
+<div class="py-4">
+
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a asp-controller="Home" asp-action="Index" class="text-decoration-none">
+                    <i class="fas fa-home me-1"></i>Inicio
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a asp-controller="Gestion" asp-action="DetailsPeluqueria" asp-route-id="@Model.PeluqueriaId" class="text-decoration-none">
+                    @Model.NombrePeluqueria
+                </a>
+            </li>
+            <li class="breadcrumb-item active">Gestionar Agenda</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex flex-wrap align-items-center justify-content-between mb-3 gap-3">
+        <div>
+            <h2 class="fw-bold mb-0">
+                <i class="fas fa-calendar-alt me-2 text-primary"></i>Gestión de Agenda
+            </h2>
+            <p class="text-muted small mb-0">@Model.NombrePeluqueria</p>
+        </div>
+        <div class="d-flex gap-2 flex-wrap align-items-center">
+            <select id="filtroEmpleado" class="form-select form-select-sm" style="min-width:180px;"
+                    onchange="calendar && calendar.refetchEvents()">
+                <option value="">Todos los empleados</option>
+                @foreach (var emp in empleados)
+                {
+                    <option value="@emp.EmpleadoId">@emp.Nombre</option>
+                }
+            </select>
+            <button class="btn btn-sm btn-outline-success fw-semibold" onclick="abrirModalHorario(null, null)">
+                <i class="fas fa-clock me-1"></i>Añadir Horario
+            </button>
+        </div>
+    </div>
+
+    <div class="mb-3 d-flex flex-wrap gap-3 small text-secondary">
+        <span><span class="leyenda-dot" style="background:#f59e0b;"></span>Pendiente</span>
+        <span><span class="leyenda-dot" style="background:#10b981;"></span>Completada</span>
+        <span><span class="leyenda-dot" style="background:#ef4444;"></span>Cancelada</span>
+        <span><span class="leyenda-dot" style="background:#64748b;"></span>No presentado</span>
+        <span><span class="leyenda-dot" style="background:#86efac; border:1px solid #4ade80;"></span>Horario disponible</span>
+    </div>
+
+    <div id="calendar"></div>
+
+</div>
+
+<!-- Modal: Detalles de Cita -->
+<div class="modal fade" id="modalCita" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow rounded-4">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">
+                    <i class="fas fa-calendar-check me-2 text-primary"></i>Detalles de la Cita
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="detCitaId" />
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <div class="text-uppercase fw-bold text-muted mb-1" style="font-size:.72rem;letter-spacing:.8px;">Cliente</div>
+                        <div id="detCliente" class="fw-semibold"></div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-uppercase fw-bold text-muted mb-1" style="font-size:.72rem;letter-spacing:.8px;">Empleado</div>
+                        <div id="detEmpleado"></div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-uppercase fw-bold text-muted mb-1" style="font-size:.72rem;letter-spacing:.8px;">Servicio</div>
+                        <div id="detServicio"></div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-uppercase fw-bold text-muted mb-1" style="font-size:.72rem;letter-spacing:.8px;">Estado</div>
+                        <div id="detEstado"></div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-uppercase fw-bold text-muted mb-1" style="font-size:.72rem;letter-spacing:.8px;">Inicio</div>
+                        <div id="detInicio"></div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-uppercase fw-bold text-muted mb-1" style="font-size:.72rem;letter-spacing:.8px;">Fin</div>
+                        <div id="detFin"></div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="text-uppercase fw-bold text-muted mb-1" style="font-size:.72rem;letter-spacing:.8px;">Notas</div>
+                    <div id="detNotas" class="text-muted fst-italic small"></div>
+                </div>
+                <hr class="my-2" />
+                <label class="form-label fw-semibold small">Cambiar estado</label>
+                <select class="form-select" id="nuevoEstado">
+                    <option value="1">Pendiente</option>
+                    <option value="2">Completada</option>
+                    <option value="3">Cancelada</option>
+                    <option value="4">No presentado</option>
+                </select>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary btn-sm fw-semibold" onclick="guardarEstado()">
+                    <i class="fas fa-save me-1"></i>Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Añadir Horario -->
+<div class="modal fade" id="modalHorario" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow rounded-4">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">
+                    <i class="fas fa-clock me-2 text-success"></i>Añadir Horario de Empleado
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold small">Empleado</label>
+                    <select class="form-select" id="horEmpleado">
+                        @foreach (var emp in empleados)
+                        {
+                            <option value="@emp.EmpleadoId">@emp.Nombre</option>
+                        }
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold small">Apertura</label>
+                    <input type="datetime-local" class="form-control" id="horApertura" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold small">Cierre</label>
+                    <input type="datetime-local" class="form-control" id="horCierre" />
+                </div>
+                <div id="horError" class="alert alert-danger py-2 small d-none"></div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success btn-sm fw-semibold" onclick="guardarHorario()">
+                    <i class="fas fa-check me-1"></i>Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/locales/es.global.min.js"></script>
+    <script>
+        const peluqueriaId = @Model.PeluqueriaId;
+        let calendar;
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const calendarEl = document.getElementById('calendar');
+            calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'timeGridWeek',
+                locale: 'es',
+                firstDay: 1,
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                buttonText: { today: 'Hoy', month: 'Mes', week: 'Semana', day: 'Día' },
+                slotMinTime: '07:00:00',
+                slotMaxTime: '22:00:00',
+                slotDuration: '00:30:00',
+                allDaySlot: false,
+                selectable: true,
+                selectMirror: true,
+                nowIndicator: true,
+                height: 'auto',
+                select: function (info) {
+                    abrirModalHorario(info.startStr, info.endStr);
+                    calendar.unselect();
+                },
+                eventClick: function (info) {
+                    if (info.event.extendedProps.type === 'cita') {
+                        abrirModalCita(info.event);
+                    }
+                },
+                events: function (info, successCallback, failureCallback) {
+                    const emp = document.getElementById('filtroEmpleado').value;
+                    const url = `/Calendario/GetEventos?peluqueriaId=${peluqueriaId}` +
+                        `&start=${encodeURIComponent(info.startStr)}` +
+                        `&end=${encodeURIComponent(info.endStr)}` +
+                        (emp ? `&empleadoId=${emp}` : '');
+                    fetch(url)
+                        .then(r => {
+                            if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                            return r.json();
+                        })
+                        .then(data => successCallback(data))
+                        .catch(err => failureCallback(err instanceof Error ? err : new Error(String(err))));
+                }
+            });
+            calendar.render();
+        });
+
+        function abrirModalCita(event) {
+            const p = event.extendedProps;
+            document.getElementById('detCitaId').value = p.citaId;
+            document.getElementById('detCliente').textContent = event.title.split(' · ')[0] || '-';
+            document.getElementById('detEmpleado').textContent = p.empleado || '-';
+            document.getElementById('detServicio').textContent = p.servicio || '-';
+            document.getElementById('detEstado').textContent = p.estado || '-';
+            document.getElementById('detNotas').textContent = p.notas || 'Sin notas';
+            document.getElementById('detInicio').textContent = event.start ? event.start.toLocaleString('es-ES') : '-';
+            document.getElementById('detFin').textContent = event.end ? event.end.toLocaleString('es-ES') : '-';
+            document.getElementById('nuevoEstado').value = p.estadoId ?? 1;
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('modalCita')).show();
+        }
+
+        function abrirModalHorario(startStr, endStr) {
+            document.getElementById('horApertura').value = startStr ? startStr.substring(0, 16) : '';
+            document.getElementById('horCierre').value = endStr ? endStr.substring(0, 16) : '';
+            document.getElementById('horError').classList.add('d-none');
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('modalHorario')).show();
+        }
+
+        async function guardarEstado() {
+            const citaId = parseInt(document.getElementById('detCitaId').value);
+            const estadoId = parseInt(document.getElementById('nuevoEstado').value);
+            const resp = await fetch('/Calendario/CambiarEstado', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ citaId, estadoId })
+            });
+            if (resp.ok) {
+                bootstrap.Modal.getInstance(document.getElementById('modalCita')).hide();
+                calendar.refetchEvents();
+            }
+        }
+
+        async function guardarHorario() {
+            const empleadoId = parseInt(document.getElementById('horEmpleado').value);
+            const apertura = document.getElementById('horApertura').value;
+            const cierre = document.getElementById('horCierre').value;
+            const errEl = document.getElementById('horError');
+            errEl.classList.add('d-none');
+            if (!apertura || !cierre) {
+                errEl.textContent = 'Completa los campos de apertura y cierre.';
+                errEl.classList.remove('d-none');
+                return;
+            }
+            if (new Date(apertura) >= new Date(cierre)) {
+                errEl.textContent = 'La apertura debe ser anterior al cierre.';
+                errEl.classList.remove('d-none');
+                return;
+            }
+            const resp = await fetch('/Calendario/AgregarHorario', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ empleadoId, apertura, cierre })
+            });
+            if (resp.ok) {
+                bootstrap.Modal.getInstance(document.getElementById('modalHorario')).hide();
+                calendar.refetchEvents();
+            } else {
+                errEl.textContent = 'Error al guardar el horario. Inténtalo de nuevo.';
+                errEl.classList.remove('d-none');
+            }
+        }
+    </script>
+}

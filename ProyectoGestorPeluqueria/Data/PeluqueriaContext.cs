@@ -33,6 +33,11 @@ namespace ProyectoGestorPeluqueria.Data
 
         public virtual DbSet<VwUsuariosCredenciale> VwUsuariosCredenciales { get; set; }
 
+        public virtual DbSet<VwPeluqueriaDuenoServicio> VwPeluqueriaDuenoServicios { get; set; }
+
+        public virtual DbSet<VwCitasCalendario> VwCitasCalendarios { get; set; }
+
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<EstadosCitum>(entity =>
@@ -45,6 +50,10 @@ namespace ProyectoGestorPeluqueria.Data
             {
                 entity.HasKey(e => e.HorarioId);
                 entity.ToTable("HORARIOS_EMPLEADO");
+                entity.Property(e => e.HorarioId).HasColumnName("HorarioID");
+                entity.Property(e => e.EmpleadoId).HasColumnName("EmpleadoID");
+                entity.Property(e => e.FechaHoraApertura).HasColumnType("datetime");
+                entity.Property(e => e.FechaHoraCierre).HasColumnType("datetime");
             });
 
             modelBuilder.Entity<Role>(entity =>
@@ -69,6 +78,18 @@ namespace ProyectoGestorPeluqueria.Data
             {
                 entity.HasNoKey();
                 entity.ToView("VW_USUARIOS_CREDENCIALES");
+            });
+
+            modelBuilder.Entity<VwPeluqueriaDuenoServicio>(entity =>
+            {
+                entity.HasNoKey();
+                entity.ToView("VW_PELUQUERIA_DUENO_SERVICIOS");
+            });
+
+            modelBuilder.Entity<VwCitasCalendario>(entity =>
+            {
+                entity.HasNoKey();
+                entity.ToView("VW_CITAS_CALENDARIO");
             });
         }
     }

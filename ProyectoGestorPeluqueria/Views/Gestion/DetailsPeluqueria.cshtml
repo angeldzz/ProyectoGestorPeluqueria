@@ -1,0 +1,278 @@
+@model VwPeluqueriaDuenoServicio
+@{
+    ViewData["Title"] = Model.NombrePeluqueria;
+    var usuarioSession = Context.Session.GetObject<Usuario>("usuario");
+    var empleados = ViewBag.Empleados as List<Empleado> ?? new List<Empleado>();
+    var servicios = ViewBag.Servicios as List<Servicio> ?? new List<Servicio>();
+}
+
+<style>
+    .detail-hero {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        border-radius: 24px;
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+
+    .salon-cover {
+        height: 280px;
+        object-fit: cover;
+        width: 100%;
+    }
+
+    .info-card {
+        border: none;
+        border-radius: 20px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+    }
+
+    .section-title {
+        font-size: 1rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1.2px;
+        color: #4f46e5;
+        margin-bottom: 1rem;
+    }
+
+    .empleado-badge {
+        border-radius: 12px;
+        padding: 10px 16px;
+        background: #f8fafc;
+        border: 1.5px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .service-pill {
+        background: #eef2ff;
+        color: #4f46e5;
+        border-radius: 50px;
+        padding: 4px 14px;
+        font-weight: 700;
+        font-size: 0.85rem;
+    }
+
+    .detail-label {
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        color: #94a3b8;
+        margin-bottom: 2px;
+    }
+
+    .detail-value {
+        font-size: 0.95rem;
+        color: #1e293b;
+        font-weight: 500;
+    }
+
+    .coords-text {
+        font-size: 0.82rem;
+        font-family: 'Courier New', Courier, monospace;
+        color: #64748b;
+    }
+
+    .btn-reservar {
+        background-color: #4f46e5;
+        border: none;
+        padding: 14px 32px;
+        border-radius: 14px;
+        font-weight: 700;
+        font-size: 1rem;
+        transition: all 0.3s;
+    }
+
+    .btn-reservar:hover {
+        background-color: #4338ca;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
+    }
+</style>
+
+<div class="container py-4">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a asp-controller="Home" asp-action="Index" class="text-decoration-none">
+                    <i class="fas fa-home me-1"></i>Inicio
+                </a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">@Model.NombrePeluqueria</li>
+        </ol>
+    </nav>
+
+    <div class="row g-4">
+
+        <!-- Columna principal -->
+        <div class="col-lg-8">
+
+            <!-- Hero de la peluquería -->
+            <div class="detail-hero">
+                <div class="position-relative">
+                    <img src="@(Model.UrlLogo ?? Url.Content("~/images/peluqueria-estandar.webp"))"
+                         class="salon-cover"
+                         alt="@Model.NombrePeluqueria"
+                         onerror="this.onerror=null;this.src='@Url.Content("~/images/peluqueria-estandar.webp")';this.alt='';">
+                    @if (servicios.Any())
+                    {
+                        <span class="position-absolute top-0 end-0 m-3 service-pill shadow-sm">
+                            <i class="fas fa-tag me-1"></i>@servicios.Count servicio(s)
+                        </span>
+                    }
+                </div>
+                <div class="p-4">
+                    <h1 class="fw-bold mb-1" style="font-size:2rem;">@Model.NombrePeluqueria</h1>
+                    <p class="text-muted mb-0">
+                        <i class="fas fa-user me-1"></i>Propietario: <strong>@Model.NombreDueno</strong>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Empleados -->
+            <div class="card info-card p-4 mb-4">
+                <p class="section-title"><i class="fas fa-users me-2"></i>Equipo</p>
+                @if (empleados.Any())
+                {
+                    <div class="row g-3">
+                        @foreach (var emp in empleados)
+                        {
+                            <div class="col-sm-6">
+                                <div class="empleado-badge">
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                                         style="width:40px;height:40px;background:#eef2ff;">
+                                        <i class="fas fa-cut text-primary"></i>
+                                    </div>
+                                    <div class="overflow-hidden">
+                                        <div class="fw-semibold text-truncate">@emp.Nombre</div>
+                                        @if (emp.Activo.HasValue)
+                                        {
+                                            <span class="badge @(emp.Activo.Value ? "bg-success" : "bg-secondary") rounded-pill" style="font-size:0.7rem;">
+                                                @(emp.Activo.Value ? "Disponible" : "No disponible")
+                                            </span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted small mb-0">
+                        <i class="fas fa-info-circle me-1"></i>No hay empleados registrados en este momento.
+                    </p>
+                }
+            </div>
+
+        </div>
+
+        <!-- Columna lateral -->
+        <div class="col-lg-4">
+
+            <!-- Servicios -->
+            @if (servicios.Any())
+            {
+                <div class="card info-card p-4 mb-4">
+                    <p class="section-title"><i class="fas fa-concierge-bell me-2"></i>Servicios</p>
+                    <div class="d-flex flex-column gap-3">
+                        @foreach (var servicio in servicios)
+                        {
+                            <div class="empleado-badge justify-content-between">
+                                <div>
+                                    <div class="fw-semibold">@servicio.Nombre</div>
+                                    <span class="text-muted" style="font-size:0.82rem;">
+                                        <i class="fas fa-clock me-1"></i>@servicio.DuracionMin min
+                                    </span>
+                                </div>
+                                <span class="fw-bold text-primary">@servicio.Precio.ToString("C")</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            <!-- Ubicación -->
+            <div class="card info-card p-4 mb-4">
+                <p class="section-title"><i class="fas fa-map-marker-alt me-2"></i>Ubicación</p>
+                @if (!string.IsNullOrEmpty(Model.Direccion))
+                {
+                    <div class="mb-3">
+                        <div class="detail-label">Dirección</div>
+                        <div class="detail-value">@Model.Direccion</div>
+                    </div>
+                }
+                @if (!string.IsNullOrEmpty(Model.Coordenadas))
+                {
+                    <div>
+                        <div class="detail-label">Coordenadas</div>
+                        <div class="coords-text">@Model.Coordenadas</div>
+                    </div>
+                }
+                @if (string.IsNullOrEmpty(Model.Direccion) && string.IsNullOrEmpty(Model.Coordenadas))
+                {
+                    <p class="text-muted small mb-0">
+                        <i class="fas fa-info-circle me-1"></i>Ubicación no especificada.
+                    </p>
+                }
+            </div>
+
+            <!-- Contacto del propietario -->
+            <div class="card info-card p-4 mb-4">
+                <p class="section-title"><i class="fas fa-address-card me-2"></i>Contacto</p>
+                <div class="mb-3">
+                    <div class="detail-label">Propietario</div>
+                    <div class="detail-value">@Model.NombreDueno</div>
+                </div>
+                <div class="mb-3">
+                    <div class="detail-label">Email</div>
+                    <div class="detail-value">
+                        <a href="mailto:@Model.EmailDueno" class="text-decoration-none">@Model.EmailDueno</a>
+                    </div>
+                </div>
+                @if (!string.IsNullOrEmpty(Model.TelefonoDueno))
+                {
+                    <div>
+                        <div class="detail-label">Teléfono</div>
+                        <div class="detail-value">
+                            <a href="tel:@Model.TelefonoDueno" class="text-decoration-none">@Model.TelefonoDueno</a>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Acción principal -->
+            @if (usuarioSession != null && usuarioSession.RolId == 3)
+            {
+                <div class="d-grid">
+                    <a asp-controller="Calendario" asp-action="Reservar" asp-route-id="@Model.PeluqueriaId"
+                       class="btn btn-reservar text-white text-decoration-none text-center">
+                        <i class="fas fa-calendar-check me-2"></i>Reservar Cita
+                    </a>
+                </div>
+            }
+            else if (usuarioSession != null && (usuarioSession.RolId == 2 || usuarioSession.RolId == 1))
+            {
+                <div class="d-grid">
+                    <a asp-controller="Calendario" asp-action="Gestionar" asp-route-id="@Model.PeluqueriaId"
+                       class="btn btn-reservar text-white text-decoration-none text-center">
+                        <i class="fas fa-calendar-alt me-2"></i>Gestionar Agenda
+                    </a>
+                </div>
+            }
+            else if (usuarioSession == null)
+            {
+                <div class="d-grid">
+                    <a asp-controller="Login" asp-action="Login" class="btn btn-reservar text-white text-decoration-none text-center">
+                        <i class="fas fa-sign-in-alt me-2"></i>Inicia sesión para reservar
+                    </a>
+                </div>
+            }
+        </div>
+
+    </div>
+</div>

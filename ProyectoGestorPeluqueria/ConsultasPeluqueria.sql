@@ -68,12 +68,20 @@ GO
 
 -- 6. Tabla de Horarios de Empleado
 CREATE TABLE HORARIOS_EMPLEADO (
-    HorarioID INT PRIMARY KEY,
-    EmpleadoID INT,
-    DiaSemana INT CHECK (DiaSemana BETWEEN 0 AND 6), -- 0=Domingo, 1=Lunes...
-    HoraApertura TIME NOT NULL,
-    HoraCierre TIME NOT NULL,
-    CONSTRAINT FK_Horarios_Empleados FOREIGN KEY (EmpleadoID) REFERENCES EMPLEADOS(EmpleadoID) ON DELETE CASCADE
+    HorarioID         INT           IDENTITY(1,1) NOT NULL,
+    EmpleadoID        INT           NOT NULL,
+    FechaHoraApertura DATETIME      NOT NULL,
+    FechaHoraCierre   DATETIME      NOT NULL,
+
+    CONSTRAINT PK_Horarios
+        PRIMARY KEY (HorarioID),
+
+    CONSTRAINT FK_Horarios_Empleados
+        FOREIGN KEY (EmpleadoID) REFERENCES dbo.EMPLEADOS(EmpleadoID)
+        ON DELETE CASCADE,
+
+    CONSTRAINT CHK_RangoHorario
+        CHECK (FechaHoraCierre > FechaHoraApertura)
 );
 GO
 
@@ -149,9 +157,9 @@ INSERT INTO EMPLEADOS (EmpleadoID, Nombre, Activo, PeluqueriaID) VALUES
 (2, 'Ana Estilista', 1, 1);
 
 -- Insertar Horarios (Lunes a Viernes para Carlos)
-INSERT INTO HORARIOS_EMPLEADO (HorarioID, EmpleadoID, DiaSemana, HoraApertura, HoraCierre) VALUES 
-(1, 1, 1, '09:00:00', '18:00:00'),
-(2, 1, 2, '09:00:00', '18:00:00');
+INSERT INTO HORARIOS_EMPLEADO (EmpleadoID, FechaHoraApertura, FechaHoraCierre) VALUES 
+(1, CONVERT(DATETIME, '20260226 09:00:00', 120), CONVERT(DATETIME, '20260226 18:00:00', 120)),
+(1, CONVERT(DATETIME, '20260227 09:00:00', 120), CONVERT(DATETIME, '20260227 18:00:00', 120));
 
 -- Insertar Estados de Cita
 INSERT INTO ESTADOS_CITA (EstadoID, NombreEstado) VALUES 
@@ -203,13 +211,55 @@ FROM dbo.USUARIOS            AS u
 INNER JOIN dbo.ROLES          AS r  ON r.RolID      = u.RolID
 INNER JOIN dbo.USUARIOS_SECURITY AS us ON us.UsuarioID = u.UsuarioID;
 GO
+CREATE OR ALTER VIEW VW_PELUQUERIA_DUENO_SERVICIOS AS
+SELECT
+    p.PeluqueriaID,
+    p.Nombre           AS NombrePeluqueria,
+    p.Direccion,
+    p.Coordenadas,
+    p.UrlLogo,
+    u.UsuarioID        AS DuenoID,
+    u.Nombre           AS NombreDueno,
+    u.email            AS EmailDueno,
+    u.telefono         AS TelefonoDueno,
+    s.ServicioID,
+    s.Nombre           AS NombreServicio,
+    s.Precio,
+    s.DuracionMin
+FROM dbo.PELUQUERIAS        AS p
+INNER JOIN dbo.USUARIOS     AS u ON u.UsuarioID    = p.PropietarioID
+LEFT  JOIN dbo.SERVICIOS    AS s ON s.PeluqueriaID = p.PeluqueriaID;
+
+CREATE OR ALTER VIEW VW_CITAS_CALENDARIO AS
+SELECT
+    c.CitaID            AS CitaId,
+    c.ClienteID         AS ClienteId,
+    c.EmpleadoID        AS EmpleadoId,
+    c.ServicioID        AS ServicioId,
+    c.EstadoID          AS EstadoId,
+    e.PeluqueriaID      AS PeluqueriaId,
+    c.FechaHoraInicio,
+    c.FechaHoraFin,
+    u.Nombre            AS NombreCliente,
+    e.Nombre            AS NombreEmpleado,
+    s.Nombre            AS NombreServicio,
+    ec.NombreEstado,
+    c.NotasCliente
+FROM  dbo.CITAS c
+LEFT JOIN dbo.USUARIOS     u  ON u.UsuarioID  = c.ClienteID
+LEFT JOIN dbo.EMPLEADOS    e  ON e.EmpleadoID = c.EmpleadoID
+LEFT JOIN dbo.SERVICIOS    s  ON s.ServicioID = c.ServicioID
+LEFT JOIN dbo.ESTADOS_CITA ec ON ec.EstadoID  = c.EstadoID;
+GO
+
 ------------------------------------------
 --SELECTS VIEWS
 ------------------------------------------
 
 SELECT * FROM VW_MENSAJES_DETALLE;
 SELECT * FROM VW_USUARIOS_CREDENCIALES;
-
+SELECT * FROM VW_PELUQUERIA_DUENO_SERVICIOS;
+SELECT * FROM VW_CITAS_CALENDARIO;
 ------------------------------------------
 --STORED PROCEDURES
 ------------------------------------------

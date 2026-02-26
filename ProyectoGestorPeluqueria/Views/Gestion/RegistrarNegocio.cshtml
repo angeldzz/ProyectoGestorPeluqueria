@@ -2,7 +2,17 @@
     ViewData["Title"] = "Registrar mi Negocio";
 }
 
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
 <style>
+    #map {
+        height: 350px;
+        width: 100%;
+        border-radius: 12px;
+        border: 1.5px solid #e2e8f0;
+        margin-bottom: 15px;
+    }
+
     .business-container {
         min-height: 90vh;
         background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
@@ -91,7 +101,7 @@
                             <p class="text-muted">Cuéntanos más sobre tu local para que los clientes puedan encontrarte.</p>
                         </div>
 
-                        <form asp-controller="Peluqueria" asp-action="Create" method="post">
+                        <form asp-controller="Gestion" asp-action="RegistrarNegocio" method="post">
                             <!-- Sección del Logo -->
                             <div class="text-center mb-4">
                                 <label class="form-label d-block">Imagen o Logo del Negocio</label>
@@ -122,26 +132,31 @@
                                 </div>
 
                                 <div class="col-12">
+                                    <label class="form-label">Ubicación del Salón</label>
+                                    <div id="map"></div>
+                                    <div class="form-text small mb-3">Haz clic en el mapa para situar tu peluquería exactamente.</div>
+                                </div>
+
+                                <div class="col-12 ">
                                     <label class="form-label">Dirección Física</label>
                                     <div class="input-group">
                                         <span class="input-group-text bg-light border-end-0" style="border-radius: 12px 0 0 12px;">
                                             <i class="fas fa-map-marker-alt text-muted"></i>
                                         </span>
-                                        <input type="text" name="Direccion" class="form-control border-start-0"
+                                        <input type="text" name="Direccion" id="direccionInput" class="form-control border-start-0"
                                                placeholder="Calle, Número, Ciudad" required style="border-radius: 0 12px 12px 0;">
                                     </div>
                                 </div>
 
                                 <div class="col-12">
-                                    <label class="form-label">Ubicación (Coordenadas)</label>
+                                    <label class="form-label">Coordenadas</label>
                                     <div class="input-group">
                                         <span class="input-group-text bg-light border-end-0" style="border-radius: 12px 0 0 12px;">
                                             <i class="fas fa-location-crosshairs text-muted"></i>
                                         </span>
-                                        <input type="text" name="Cordenadas" class="form-control border-start-0"
-                                               placeholder="Ej. 40.4167, -3.7037" style="border-radius: 0 12px 12px 0;">
+                                        <input type="text" name="Cordenadas" id="coordenadasInput" class="form-control border-start-0"
+                                               placeholder="Ej. 40.4167, -3.7037" readonly style="border-radius: 0 12px 12px 0;">
                                     </div>
-                                    <div class="form-text small">Puedes obtenerlas de Google Maps (Latitud, Longitud).</div>
                                 </div>
 
                                 <div class="col-12">
@@ -170,27 +185,63 @@
 </div>
 
 @section Scripts {
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        $(document).ready(function() {
-        // Lógica para previsualizar el logo en tiempo real
-        $('#urlInput').on('input', function() {
-        var url = $(this).val();
-        if (url && url.length > 5) {
-        $('#logoPreview').attr('src', url).show();
-        $('#placeholderIcon').hide();
-        } else {
-        $('#logoPreview').hide();
-        $('#placeholderIcon').show();
-        }
-        });
+        $(document).ready(function () {
+            // --- Mapa Leaflet ---
+            var defaultLat = 40.4167;
+            var defaultLng = -3.7037;
 
-                // Manejo de error si la URL no es una imagen válida
-                $('#logoPreview').on('error', function() {
-                    $(this).hide();
-                    $('#placeholderIcon').show();
-                });
+            var map = L.map('map').setView([defaultLat, defaultLng], 13);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+
+            var marker;
+
+            function obtenerDireccion(lat, lng) {
+                fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.display_name) {
+                            $('#direccionInput').val(data.display_name);
+                        }
+                    })
+                    .catch(err => console.error("Error en geocodificación:", err));
+            }
+
+            map.on('click', function (e) {
+                var lat = e.latlng.lat;
+                var lng = e.latlng.lng;
+
+                $('#coordenadasInput').val(`${lat.toFixed(6)}, ${lng.toFixed(6)}`);
+
+                if (marker) {
+                    marker.setLatLng(e.latlng);
+                } else {
+                    marker = L.marker(e.latlng).addTo(map);
+                }
+
+                obtenerDireccion(lat, lng);
             });
+
+            // --- Logo preview ---
+            $('#urlInput').on('input', function () {
+                var url = $(this).val();
+                if (url && url.length > 5) {
+                    $('#logoPreview').attr('src', url).show();
+                    $('#placeholderIcon').hide();
+                } else {
+                    $('#logoPreview').hide();
+                    $('#placeholderIcon').show();
+                }
+            });
+
+            $('#logoPreview').on('error', function () {
+                $(this).hide();
+                $('#placeholderIcon').show();
+            });
+        });
     </script>
-
-
 }

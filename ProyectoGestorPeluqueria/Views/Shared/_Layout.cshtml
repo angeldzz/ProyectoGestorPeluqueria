@@ -41,6 +41,9 @@
     </style>
 </head>
 <body>
+    @{
+        var usuarioSession = Context.Session.GetObject<Usuario>("usuario");
+    }
     <header>
         <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom shadow-sm sticky-top">
             <div class="container">
@@ -60,16 +63,26 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Gestion" asp-action="RegistrarNegocio">
-                                <i class="fa-solid fa-hammer"></i> Registrar Negocio
-                            </a>
-                        </li>
+                                @if (usuarioSession != null)
+                                {
+                                    @if (usuarioSession.RolId == 2)
+                                    {
+                                        <a class="nav-link text-dark" asp-area="" asp-controller="Gestion" asp-action="RegistrarNegocio">
+                                            <i class="fa-solid fa-hammer"></i> Registrar Negocio
+                                        </a>
+                                    }
+                                    else if (usuarioSession.RolId == 3)
+                                    {
+                                        <a class="nav-link text-dark" asp-area="" asp-controller="Gestion" asp-action="RegistrarNegocio">
+                                            <i class="fa-solid fa-hammer"></i> Mis Citas
+                                        </a>
+                                    }
+                                }
+                            </li>
                     </ul>
 
                     <ul class="navbar-nav ms-auto align-items-center">
-                        @{
-                            var usuarioSession = Context.Session.GetObject<Usuario>("usuario");
-                        }
+                        
                         @if (usuarioSession != null)
                         {
                             <li class="nav-item me-2">

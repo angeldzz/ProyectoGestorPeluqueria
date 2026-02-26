@@ -7,13 +7,11 @@ public partial class HorariosEmpleado
 {
     public int HorarioId { get; set; }
 
-    public int? EmpleadoId { get; set; }
+    public int EmpleadoId { get; set; }
 
-    public int? DiaSemana { get; set; }
+    public DateTime FechaHoraApertura { get; set; }
 
-    public TimeOnly HoraApertura { get; set; }
+    public DateTime FechaHoraCierre { get; set; }
 
-    public TimeOnly HoraCierre { get; set; }
-
-    public virtual Empleado? Empleado { get; set; }
+    public virtual Empleado Empleado { get; set; } = null!;
 }

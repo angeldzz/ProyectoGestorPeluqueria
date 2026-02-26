@@ -1,0 +1,2 @@
+﻿Cada cambio en la BBDD tiene que actualizar los modelos en NugetConsole con:
+Scaffold-DbContext "Server=.\DEVELOPER;Database=PROYECTOPELUQUERIA;User ID=sa;Password=;TrustServerCertificate=True" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Models -Force
