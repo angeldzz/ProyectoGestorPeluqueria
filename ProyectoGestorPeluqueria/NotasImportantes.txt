@@ -3,7 +3,10 @@ Scaffold-DbContext "Server=.\DEVELOPER;Database=PROYECTOPELUQUERIA;User ID=sa;Pa
 
 
 -----------------------------------------------------------------------
-NOTAS: No todos los empresarios pueden gestionar todas las peluquerias, controlar
-El registrar negocio del layout esta fallando
+HECHO!!!
+NOTAS: No todos los empresarios pueden gestionar todas las peluquerias, controlar 
 Falta controlar las citas correctamente
-Crear Ver mis Citas y gestionar negocio de empresario.
+-------------------------------------------------------------------------------
+El registrar negocio del layout esta fallando
+Crear Ver mis Citas para clientes
+Pagina gestionar negocio de empresario y meter en session que ids de peluquerias tiene asignadas el empresario si es que tiene para enviar a gestionarlas

@@ -22,6 +22,7 @@ namespace ProyectoGestorPeluqueria.Controllers
 
             var peluqueria = await repo.FindPeluqueria(id);
             if (peluqueria == null) return NotFound();
+            if (peluqueria.DuenoId != usuario.UsuarioId) return RedirectToAction("Index", "Home");
 
             ViewBag.Empleados = await repo.FindEmpleadosPeluqueria(id);
             ViewBag.Servicios = await repo.FindServiciosPeluqueria(id);
