@@ -161,6 +161,7 @@ GO
                 .Select(e => e.EmpleadoId);
 
             var query = this.context.HorariosEmpleados
+                .Include(h => h.Empleado)
                 .Where(h => empleadosIds.Contains(h.EmpleadoId)
                          && h.FechaHoraApertura < end
                          && h.FechaHoraCierre > start);

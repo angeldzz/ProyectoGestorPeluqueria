@@ -38,14 +38,78 @@
         .footer {
             background-color: #f8f9fa;
         }
+        /* --- Dropdown desktop --- */
+        .dropdown-menu {
+            border: none;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.10);
+            border-radius: 12px;
+            padding: 6px 0;
+            min-width: 220px;
+        }
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+            padding: 9px 16px;
+            border-radius: 8px;
+            margin: 2px 6px;
+            width: calc(100% - 12px);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: background 0.2s, color 0.2s;
+        }
+        .dropdown-item i {
+            width: 20px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        .dropdown-item:hover {
+            background-color: #e9f0ff;
+            color: #0d6efd;
+        }
+        .dropdown-divider {
+            margin: 4px 12px;
+        }
+        .nav-negocios-badge {
+            font-size: 0.7rem;
+            vertical-align: middle;
+            margin-left: 4px;
+        }
+        /* --- Responsive: menú colapsado en móvil --- */
+        @@media (max-width: 991.98px) {
+            .navbar-nav + .navbar-nav {
+                border-top: 1px solid #dee2e6;
+                padding-top: 0.5rem;
+                margin-top: 0.5rem;
+            }
+            .dropdown-menu {
+                box-shadow: none;
+                border-radius: 8px;
+                background-color: #f8f9fa;
+                min-width: 100%;
+                margin-top: 2px !important;
+            }
+            .dropdown-item {
+                margin: 1px 4px;
+                width: calc(100% - 8px);
+                padding-left: 1.25rem;
+            }
+            .btn-login {
+                width: 100%;
+                text-align: center;
+                margin: 4px 0;
+            }
+        }
     </style>
 </head>
 <body>
     @{
-        var usuarioSession = Context.Session.GetObject<Usuario>("usuario");
+        Usuario usuarioSession = Context.Session.GetObject<Usuario>("usuario");
+        List<Peluqueria> peluqueriasUsuario = Context.Session.GetObject<List<Peluqueria>>("peluqueriasUsuario");
     }
     <header>
-        <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom shadow-sm sticky-top">
+        <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm sticky-top">
             <div class="container">
                 <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
                     <i class="fas fa-scissors me-2 text-primary"></i>GestorPeluquería
@@ -55,30 +119,58 @@
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                <div class="navbar-collapse collapse justify-content-between align-items-center">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">
                                 <i class="fas fa-home me-1"></i> Inicio
                             </a>
                         </li>
-                        <li class="nav-item">
-                                @if (usuarioSession != null)
-                                {
-                                    @if (usuarioSession.RolId == 2)
-                                    {
-                                        <a class="nav-link text-dark" asp-area="" asp-controller="Gestion" asp-action="RegistrarNegocio">
-                                            <i class="fa-solid fa-hammer"></i> Registrar Negocio
-                                        </a>
-                                    }
-                                    else if (usuarioSession.RolId == 3)
-                                    {
-                                        <a class="nav-link text-dark" asp-area="" asp-controller="Gestion" asp-action="RegistrarNegocio">
-                                            <i class="fa-solid fa-hammer"></i> Mis Citas
-                                        </a>
-                                    }
-                                }
-                            </li>
+                        @if (usuarioSession != null)
+                        {
+                            @if (usuarioSession.RolId == 3)
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Gestion" asp-action="CitasCliente">
+                                        <i class="fa-solid fa-calendar-check me-1"></i> Mis Citas
+                                    </a>
+                                </li>
+                            }
+                            else if (usuarioSession.RolId == 2)
+                            {
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link text-dark dropdown-toggle" href="#" role="button"
+                                       data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fa-solid fa-store me-1"></i> Mis Negocios
+                                        @if (peluqueriasUsuario != null)
+                                        {
+                                            <span class="badge bg-primary nav-negocios-badge">@peluqueriasUsuario.Count</span>
+                                        }
+                                    </a>
+                                    <ul class="dropdown-menu">
+                                        @if (peluqueriasUsuario != null && peluqueriasUsuario.Count > 0)
+                                        {
+                                            @foreach (Peluqueria peluqueria in peluqueriasUsuario)
+                                            {
+                                                <li>
+                                                    <a class="dropdown-item" asp-area="" asp-controller="Gestion"
+                                                       asp-action="GestionarPeluqueria"
+                                                       asp-route-idpeluqueria="@peluqueria.PeluqueriaId">
+                                                        <i class="fa-solid fa-scissors me-2 text-primary"></i>@peluqueria.Nombre
+                                                    </a>
+                                                </li>
+                                            }
+                                            <li><hr class="dropdown-divider" /></li>
+                                        }
+                                        <li>
+                                            <a class="dropdown-item" asp-area="" asp-controller="Gestion" asp-action="RegistrarNegocio">
+                                                <i class="fa-solid fa-plus-circle me-2 text-success"></i> Registrar Negocio
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            }
+                        }
                     </ul>
 
                     <ul class="navbar-nav ms-auto align-items-center">

@@ -93,10 +93,11 @@ namespace ProyectoGestorPeluqueria.Controllers
 
             foreach (var h in horarios)
             {
+                var nombreEmpleado = h.Empleado?.Nombre ?? "Empleado";
                 events.Add(new
                 {
                     id = "horario_" + h.HorarioId,
-                    title = "Disponible",
+                    title = $"Disponible · {nombreEmpleado}",
                     start = h.FechaHoraApertura.ToString("yyyy-MM-ddTHH:mm:ss"),
                     end = h.FechaHoraCierre.ToString("yyyy-MM-ddTHH:mm:ss"),
                     display = "background",
@@ -105,12 +106,38 @@ namespace ProyectoGestorPeluqueria.Controllers
                     {
                         type = "horario",
                         empleadoId = h.EmpleadoId,
+                        empleadoNombre = nombreEmpleado,
                         horarioId = h.HorarioId
                     }
                 });
             }
 
             return Json(events);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetEmpleadosDisponibles(int peluqueriaId, string inicio, int servicioId)
+        {
+            if (!DateTime.TryParse(inicio, out var inicioDate))
+                return BadRequest();
+
+            var servicio = await repo.FindServicio(servicioId);
+            if (servicio == null)
+                return BadRequest();
+
+            var fin = inicioDate.AddMinutes(servicio.DuracionMin);
+            var empleados = await repo.FindEmpleadosPeluqueria(peluqueriaId);
+
+            var disponibles = new List<object>();
+            foreach (var emp in empleados)
+            {
+                if (await repo.EmpleadoDisponible(emp.EmpleadoId, inicioDate, fin))
+                {
+                    disponibles.Add(new { empleadoId = emp.EmpleadoId, nombre = emp.Nombre });
+                }
+            }
+
+            return Json(disponibles);
         }
 
         [HttpPost]

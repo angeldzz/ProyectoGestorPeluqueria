@@ -27,8 +27,9 @@ namespace ProyectoGestorPeluqueria.Controllers
                 ViewBag.Error = "Email o contraseña incorrectos.";
                 return View();
             }
-
+            List<Peluqueria> peluquerias = await this.repo.GetPeluqueriasUsuarioAsync(usuario.UsuarioId);
             HttpContext.Session.SetObject("usuario", usuario);
+            HttpContext.Session.SetObject("peluqueriasUsuario", peluquerias);
             return RedirectToAction("Index", "Home");
         }
 

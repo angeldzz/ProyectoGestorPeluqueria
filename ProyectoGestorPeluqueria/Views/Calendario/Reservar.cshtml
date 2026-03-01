@@ -88,15 +88,15 @@
                 <div class="mb-3">
                     <label class="form-label fw-semibold small">Empleado</label>
                     <select class="form-select" id="resEmpleado">
-                        @foreach (var emp in empleados)
-                        {
-                            <option value="@emp.EmpleadoId">@emp.Nombre</option>
-                        }
+                        <option value="" disabled selected>Selecciona fecha y servicio...</option>
                     </select>
+                    <div id="resEmpleadoInfo" class="form-text text-warning small d-none">
+                        <i class="fas fa-exclamation-triangle me-1"></i>No hay empleados disponibles en este horario.
+                    </div>
                 </div>
                 <div class="mb-3">
                     <label class="form-label fw-semibold small">Servicio</label>
-                    <select class="form-select" id="resServicio" onchange="actualizarFin()">
+                    <select class="form-select" id="resServicio" onchange="actualizarFin(); cargarEmpleadosDisponibles();">
                         @foreach (var s in servicios)
                         {
                             <option value="@s.ServicioId" data-duracion="@s.DuracionMin">
@@ -108,7 +108,7 @@
                 <div class="row g-2 mb-3">
                     <div class="col-6">
                         <label class="form-label fw-semibold small">Inicio</label>
-                        <input type="datetime-local" class="form-control" id="resInicio" onchange="actualizarFin()" />
+                        <input type="datetime-local" class="form-control" id="resInicio" onchange="actualizarFin(); cargarEmpleadosDisponibles();" />
                     </div>
                     <div class="col-6">
                         <label class="form-label fw-semibold small">Fin (estimado)</label>
@@ -141,6 +141,7 @@
         const peluqueriaId = @Model.PeluqueriaId;
         const clienteIdActual = @clienteId;
         let calendar;
+        let empleadoPreseleccionado = null;
 
         document.addEventListener('DOMContentLoaded', function () {
             const calendarEl = document.getElementById('calendar');
@@ -161,7 +162,15 @@
                 nowIndicator: true,
                 height: 'auto',
                 dateClick: function (info) {
+                    empleadoPreseleccionado = null;
                     abrirModalReservar(info.dateStr);
+                },
+                eventClick: function (info) {
+                    const props = info.event.extendedProps;
+                    if (props.type === 'horario') {
+                        empleadoPreseleccionado = props.empleadoId;
+                        abrirModalReservar(info.event.startStr);
+                    }
                 },
                 events: function (info, successCallback, failureCallback) {
                     const emp = document.getElementById('filtroEmpleado').value;
@@ -175,6 +184,7 @@
                             return r.json();
                         })
                         .then(data => {
+                            const processed = [];
                             data.forEach(ev => {
                                 if (ev.extendedProps && ev.extendedProps.type === 'cita') {
                                     if (ev.extendedProps.clienteId === clienteIdActual) {
@@ -186,9 +196,24 @@
                                         ev.backgroundColor = '#cbd5e1';
                                         ev.borderColor = '#94a3b8';
                                     }
+                                    processed.push(ev);
+                                } else if (ev.extendedProps && ev.extendedProps.type === 'horario') {
+                                    processed.push(ev);
+                                    processed.push({
+                                        id: ev.id + '_label',
+                                        title: `✓ ${ev.extendedProps.empleadoNombre}`,
+                                        start: ev.start,
+                                        end: ev.end,
+                                        backgroundColor: '#86efac',
+                                        borderColor: '#4ade80',
+                                        textColor: '#166534',
+                                        extendedProps: ev.extendedProps
+                                    });
+                                } else {
+                                    processed.push(ev);
                                 }
                             });
-                            successCallback(data);
+                            successCallback(processed);
                         })
                         .catch(err => failureCallback(err instanceof Error ? err : new Error(String(err))));
                 }
@@ -201,10 +226,62 @@
             document.getElementById('resError').classList.add('d-none');
             document.getElementById('resSuccess').classList.add('d-none');
             document.getElementById('btnConfirmar').disabled = false;
-            const empFiltro = document.getElementById('filtroEmpleado').value;
-            if (empFiltro) document.getElementById('resEmpleado').value = empFiltro;
             actualizarFin();
+            cargarEmpleadosDisponibles();
             bootstrap.Modal.getOrCreateInstance(document.getElementById('modalReservar')).show();
+        }
+
+        async function cargarEmpleadosDisponibles() {
+            const inicio = document.getElementById('resInicio').value;
+            const servicioId = document.getElementById('resServicio').value;
+            const select = document.getElementById('resEmpleado');
+            const infoEl = document.getElementById('resEmpleadoInfo');
+            const btnConfirmar = document.getElementById('btnConfirmar');
+
+            infoEl.classList.add('d-none');
+
+            if (!inicio || !servicioId) {
+                select.innerHTML = '<option value="" disabled selected>Selecciona fecha y servicio...</option>';
+                btnConfirmar.disabled = true;
+                return;
+            }
+
+            select.innerHTML = '<option value="" disabled selected>Cargando...</option>';
+
+            try {
+                const url = `/Calendario/GetEmpleadosDisponibles?peluqueriaId=${peluqueriaId}` +
+                    `&inicio=${encodeURIComponent(inicio)}&servicioId=${servicioId}`;
+                const resp = await fetch(url);
+                if (!resp.ok) throw new Error();
+                const empleados = await resp.json();
+
+                select.innerHTML = '';
+                if (empleados.length === 0) {
+                    select.innerHTML = '<option value="" disabled selected>Sin disponibilidad</option>';
+                    infoEl.classList.remove('d-none');
+                    btnConfirmar.disabled = true;
+                } else {
+                    empleados.forEach(emp => {
+                        const opt = document.createElement('option');
+                        opt.value = emp.empleadoId;
+                        opt.textContent = emp.nombre;
+                        select.appendChild(opt);
+                    });
+                    if (empleadoPreseleccionado) {
+                        const exists = empleados.some(e => e.empleadoId === empleadoPreseleccionado);
+                        if (exists) select.value = empleadoPreseleccionado;
+                    }
+                    const empFiltro = document.getElementById('filtroEmpleado').value;
+                    if (!empleadoPreseleccionado && empFiltro) {
+                        const exists = empleados.some(e => e.empleadoId === parseInt(empFiltro));
+                        if (exists) select.value = empFiltro;
+                    }
+                    btnConfirmar.disabled = false;
+                }
+            } catch {
+                select.innerHTML = '<option value="" disabled selected>Error al cargar</option>';
+                btnConfirmar.disabled = true;
+            }
         }
 
         function actualizarFin() {
@@ -227,6 +304,12 @@
 
             if (!inicio) {
                 errEl.textContent = 'Selecciona una fecha y hora de inicio.';
+                errEl.classList.remove('d-none');
+                return;
+            }
+
+            if (!empleadoId) {
+                errEl.textContent = 'Selecciona un empleado disponible.';
                 errEl.classList.remove('d-none');
                 return;
             }

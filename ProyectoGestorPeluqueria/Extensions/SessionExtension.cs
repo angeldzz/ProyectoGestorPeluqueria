@@ -7,7 +7,10 @@ namespace ProyectoGestorPeluqueria.Extensions
         public static void SetObject
             (this ISession session, string key, object value)
         {
-            string json = JsonConvert.SerializeObject(value);
+            string json = JsonConvert.SerializeObject(value, new JsonSerializerSettings
+            {
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+            });
             session.SetString(key, json);
         }
         public static T GetObject<T>

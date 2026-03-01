@@ -6,7 +6,19 @@ Scaffold-DbContext "Server=.\DEVELOPER;Database=PROYECTOPELUQUERIA;User ID=sa;Pa
 HECHO!!!
 NOTAS: No todos los empresarios pueden gestionar todas las peluquerias, controlar 
 Falta controlar las citas correctamente
+El registrar negocio del layout esta fallando Con implementacion de peluquerias del usuario
+meter en session que ids de peluquerias tiene asignadas el empresario si es que tiene para enviar a gestionarlas
 -------------------------------------------------------------------------------
-El registrar negocio del layout esta fallando
-Crear Ver mis Citas para clientes
-Pagina gestionar negocio de empresario y meter en session que ids de peluquerias tiene asignadas el empresario si es que tiene para enviar a gestionarlas
+Crear Ver mis Citas para clientes:
+
+https://localhost:7192/Gestion/CitasCliente.
+
+Pagina gestionar negocio de empresario:
+
+<a class="dropdown-item" asp-area="" asp-controller="Gestion"
+    asp-action="GestionarPeluqueria"
+    asp-route-idpeluqueria="@peluqueria.PeluqueriaId">
+    <i class="fa-solid fa-scissors me-2 text-primary"></i>@peluqueria.Nombre
+</a>
+
+arreglar estilos de reserva de citas

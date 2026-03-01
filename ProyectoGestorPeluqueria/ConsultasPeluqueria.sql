@@ -327,6 +327,32 @@ BEGIN
     END CATCH
 END;
 
+GO
+CREATE OR ALTER PROCEDURE SP_PELUQUERIAS_POR_USUARIO
+    @UsuarioID INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.USUARIOS WHERE UsuarioID = @UsuarioID)
+    BEGIN
+        RAISERROR('El UsuarioID %d no existe.', 16, 1, @UsuarioID);
+        RETURN;
+    END
+
+    SELECT
+        p.PeluqueriaID,
+        p.Nombre,
+        p.Direccion,
+        p.Coordenadas,
+        p.UrlLogo,
+        p.PropietarioID
+    FROM dbo.PELUQUERIAS AS p
+    WHERE p.PropietarioID = @UsuarioID;
+END;
+GO
+
+EXEC dbo.SP_PELUQUERIAS_POR_USUARIO @UsuarioID = 2;
 ------------------------------------------
 --SELECTS GENERALES
 ------------------------------------------

@@ -72,6 +72,31 @@ BEGIN
     END CATCH
 END;
      */
+    /*
+GO
+CREATE OR ALTER PROCEDURE SP_PELUQUERIAS_POR_USUARIO
+    @UsuarioID INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.USUARIOS WHERE UsuarioID = @UsuarioID)
+    BEGIN
+        RAISERROR('El UsuarioID %d no existe.', 16, 1, @UsuarioID);
+        RETURN;
+    END
+
+    SELECT
+        p.PeluqueriaID,
+        p.Nombre,
+        p.Direccion,
+        p.Coordenadas,
+        p.UrlLogo,
+        p.PropietarioID
+    FROM dbo.PELUQUERIAS AS p
+    WHERE p.PropietarioID = @UsuarioID;
+END;
+     */
     #endregion
     public class RepositoryUsuarios : IRepositoryUsuarios
     {
@@ -97,6 +122,14 @@ END;
             await this.context.Database.ExecuteSqlRawAsync(
                 "EXEC SP_REGISTRAR_USUARIO @Nombre, @Password, @Email, @Telefono, @RolID, @Pass, @Salt",
                 paramNombre, paramPassword, paramEmail, paramTelefono, paramRolId, paramPass, paramSalt);
+        }
+
+        public async Task<List<Peluqueria>> GetPeluqueriasUsuarioAsync(int id)
+        {
+            SqlParameter paramId = new SqlParameter("@UsuarioID", id);
+            return await this.context.Peluquerias
+                .FromSqlRaw("EXEC SP_PELUQUERIAS_POR_USUARIO @UsuarioID", paramId)
+                .ToListAsync();
         }
 
         public async Task<Usuario?> LogInUsuarioAsync(string email, string password)

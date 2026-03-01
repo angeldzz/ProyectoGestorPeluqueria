@@ -8,9 +8,11 @@ namespace ProyectoGestorPeluqueria.Controllers
     public class GestionController : Controller
     {
         private IRepositoryGestion repo;
-        public GestionController(IRepositoryGestion repo)
+        private IRepositoryUsuarios repoUser;
+        public GestionController(IRepositoryGestion repo, IRepositoryUsuarios repoUser)
         {
             this.repo = repo;
+            this.repoUser = repoUser;
         }
         public async Task<IActionResult> DetailsPeluqueria(int id)
         {
@@ -31,9 +33,9 @@ namespace ProyectoGestorPeluqueria.Controllers
             {
                 return RedirectToAction("Login", "Login");
             }
-            else if (usuario.UsuarioId != 2)
+            else if (usuario.RolId != 2)
             {
-                return RedirectToAction("Home", "Index");
+                return RedirectToAction("Index", "Home");
             }
             return View();
         }
@@ -48,12 +50,14 @@ namespace ProyectoGestorPeluqueria.Controllers
             {
                 return RedirectToAction("Login", "Login");
             }
-            else if(usuario.UsuarioId != 2)
+            else if(usuario.RolId != 2)
             {
-                return RedirectToAction("Home", "Index");
+                return RedirectToAction("Index", "Home");
             }
 
             await this.repo.CreatePeluqueria(nombre, direccion, urlLogo, cordenadas, usuario.UsuarioId);
+            List<Peluqueria> peluquerias = await this.repoUser.GetPeluqueriasUsuarioAsync(usuario.UsuarioId);
+            HttpContext.Session.SetObject("peluqueriasUsuario", peluquerias);
             return RedirectToAction("Index", "Home");
         }
     }
