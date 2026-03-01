@@ -7,9 +7,9 @@ namespace ProyectoGestorPeluqueria.Controllers
 {
     public class GestionController : Controller
     {
-        private IRepositoryGestion repo;
+        private IRepositoryGestorPeluqueria repo;
         private IRepositoryUsuarios repoUser;
-        public GestionController(IRepositoryGestion repo, IRepositoryUsuarios repoUser)
+        public GestionController(IRepositoryGestorPeluqueria repo, IRepositoryUsuarios repoUser)
         {
             this.repo = repo;
             this.repoUser = repoUser;
@@ -58,7 +58,8 @@ namespace ProyectoGestorPeluqueria.Controllers
             await this.repo.CreatePeluqueria(nombre, direccion, urlLogo, cordenadas, usuario.UsuarioId);
             List<Peluqueria> peluquerias = await this.repoUser.GetPeluqueriasUsuarioAsync(usuario.UsuarioId);
             HttpContext.Session.SetObject("peluqueriasUsuario", peluquerias);
-            return RedirectToAction("Index", "Home");
+            int nuevaId = peluquerias.Max(p => p.PeluqueriaId);
+            return RedirectToAction("Gestionar", "Calendario", new { id = nuevaId });
         }
     }
 }

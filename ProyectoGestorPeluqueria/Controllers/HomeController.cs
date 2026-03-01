@@ -7,8 +7,8 @@ namespace ProyectoGestorPeluqueria.Controllers
 {
     public class HomeController : Controller
     {
-        private IRepositoryGestion repo;
-        public HomeController(IRepositoryGestion repo)
+        private IRepositoryGestorPeluqueria repo;
+        public HomeController(IRepositoryGestorPeluqueria repo)
         {
             this.repo = repo;
         }

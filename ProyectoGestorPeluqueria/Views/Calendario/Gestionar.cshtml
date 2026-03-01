@@ -63,6 +63,12 @@
             <button class="btn btn-sm btn-outline-success fw-semibold" onclick="abrirModalHorario(null, null)">
                 <i class="fas fa-clock me-1"></i>Añadir Horario
             </button>
+            <button class="btn btn-sm btn-outline-primary fw-semibold" onclick="abrirModalServicio()">
+                <i class="fas fa-concierge-bell me-1"></i>Añadir Servicio
+            </button>
+            <button class="btn btn-sm btn-outline-secondary fw-semibold" onclick="abrirModalEmpleado()">
+                <i class="fas fa-user-plus me-1"></i>Añadir Empleado
+            </button>
         </div>
     </div>
 
@@ -173,6 +179,70 @@
                 <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
                 <button type="button" class="btn btn-success btn-sm fw-semibold" onclick="guardarHorario()">
                     <i class="fas fa-check me-1"></i>Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Añadir Servicio -->
+<div class="modal fade" id="modalServicio" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow rounded-4">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">
+                    <i class="fas fa-concierge-bell me-2 text-primary"></i>Añadir Servicio
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold small">Nombre</label>
+                    <input type="text" class="form-control" id="srvNombre" placeholder="Ej. Corte de pelo" />
+                </div>
+                <div class="row g-3 mb-3">
+                    <div class="col-6">
+                        <label class="form-label fw-semibold small">Precio (€)</label>
+                        <input type="number" class="form-control" id="srvPrecio" step="0.01" min="0.01" placeholder="15.00" />
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label fw-semibold small">Duración (min)</label>
+                        <input type="number" class="form-control" id="srvDuracion" min="1" placeholder="30" />
+                    </div>
+                </div>
+                <div id="srvError" class="alert alert-danger py-2 small d-none"></div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary btn-sm fw-semibold" onclick="guardarServicio()">
+                    <i class="fas fa-plus me-1"></i>Añadir
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Añadir Empleado -->
+<div class="modal fade" id="modalEmpleado" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow rounded-4">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">
+                    <i class="fas fa-user-plus me-2 text-secondary"></i>Añadir Empleado
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold small">Nombre</label>
+                    <input type="text" class="form-control" id="empNombre" placeholder="Ej. Carlos García" />
+                </div>
+                <div id="empError" class="alert alert-danger py-2 small d-none"></div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm fw-semibold" onclick="guardarEmpleado()">
+                    <i class="fas fa-user-plus me-1"></i>Añadir
                 </button>
             </div>
         </div>
@@ -294,6 +364,68 @@
                 calendar.refetchEvents();
             } else {
                 errEl.textContent = 'Error al guardar el horario. Inténtalo de nuevo.';
+                errEl.classList.remove('d-none');
+            }
+        }
+
+        function abrirModalServicio() {
+            document.getElementById('srvNombre').value = '';
+            document.getElementById('srvPrecio').value = '';
+            document.getElementById('srvDuracion').value = '';
+            document.getElementById('srvError').classList.add('d-none');
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('modalServicio')).show();
+        }
+
+        async function guardarServicio() {
+            const nombre = document.getElementById('srvNombre').value.trim();
+            const precio = parseFloat(document.getElementById('srvPrecio').value);
+            const duracionMin = parseInt(document.getElementById('srvDuracion').value);
+            const errEl = document.getElementById('srvError');
+            errEl.classList.add('d-none');
+            if (!nombre || isNaN(precio) || precio <= 0 || isNaN(duracionMin) || duracionMin <= 0) {
+                errEl.textContent = 'Completa todos los campos correctamente.';
+                errEl.classList.remove('d-none');
+                return;
+            }
+            const resp = await fetch('/Calendario/AgregarServicio', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nombre, precio, duracionMin, peluqueriaId })
+            });
+            if (resp.ok) {
+                bootstrap.Modal.getInstance(document.getElementById('modalServicio')).hide();
+                location.reload();
+            } else {
+                errEl.textContent = 'Error al guardar el servicio. Comprueba que no existe ya.';
+                errEl.classList.remove('d-none');
+            }
+        }
+
+        function abrirModalEmpleado() {
+            document.getElementById('empNombre').value = '';
+            document.getElementById('empError').classList.add('d-none');
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('modalEmpleado')).show();
+        }
+
+        async function guardarEmpleado() {
+            const nombre = document.getElementById('empNombre').value.trim();
+            const errEl = document.getElementById('empError');
+            errEl.classList.add('d-none');
+            if (!nombre) {
+                errEl.textContent = 'El nombre es obligatorio.';
+                errEl.classList.remove('d-none');
+                return;
+            }
+            const resp = await fetch('/Calendario/AgregarEmpleado', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nombre, peluqueriaId })
+            });
+            if (resp.ok) {
+                bootstrap.Modal.getInstance(document.getElementById('modalEmpleado')).hide();
+                location.reload();
+            } else {
+                errEl.textContent = 'Error al guardar el empleado. Comprueba que no existe ya.';
                 errEl.classList.remove('d-none');
             }
         }

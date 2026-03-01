@@ -2,9 +2,11 @@
 
 namespace ProyectoGestorPeluqueria.Repositories
 {
-    public interface IRepositoryGestion
+    public interface IRepositoryGestorPeluqueria
     {
         Task CreatePeluqueria(string nombre, string? direccion, string? logo, string? cordenadas, int propietario);
+        Task CreateServicioPeluqueria(string nombre, decimal precio, int duracionMin, int idPeluqueria);
+        Task CreateEmpleadoPeluqueria(string nombre, int idPeluqueria);
         Task<List<VwPeluqueriaDuenoServicio>> MostrarPeluquerias();
         Task<List<Empleado>> FindEmpleadosPeluqueria(int idPeluqueria);
         Task<VwPeluqueriaDuenoServicio> FindPeluqueria(int idPeluqueria);

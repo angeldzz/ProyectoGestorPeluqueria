@@ -326,7 +326,152 @@ BEGIN
         THROW;
     END CATCH
 END;
+-------------------------------------
 
+GO
+CREATE OR ALTER PROCEDURE SP_INSERT_SERVICIO_PELUQUERIA
+    @Nombre       NVARCHAR(100),
+    @Precio       DECIMAL(10, 2),
+    @DuracionMin  INT,
+    @PeluqueriaID INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Verificar que la peluquería existe
+    IF NOT EXISTS (SELECT 1 FROM dbo.PELUQUERIAS WHERE PeluqueriaID = @PeluqueriaID)
+    BEGIN
+        RAISERROR('La PeluqueriaID %d no existe.', 16, 1, @PeluqueriaID);
+        RETURN;
+    END
+
+    -- Verificar que no existe ya un servicio con el mismo nombre en esa peluquería
+    IF EXISTS (SELECT 1 FROM dbo.SERVICIOS WHERE Nombre = @Nombre AND PeluqueriaID = @PeluqueriaID)
+    BEGIN
+        RAISERROR('Ya existe un servicio con el nombre "%s" en esta peluquería.', 16, 1, @Nombre);
+        RETURN;
+    END
+
+    -- Validar Precio positivo
+    IF @Precio <= 0
+    BEGIN
+        RAISERROR('El precio debe ser mayor que 0.', 16, 1);
+        RETURN;
+    END
+
+    -- Validar DuracionMin positiva
+    IF @DuracionMin <= 0
+    BEGIN
+        RAISERROR('La duración en minutos debe ser mayor que 0.', 16, 1);
+        RETURN;
+    END
+
+    DECLARE @NuevoServicioID INT;
+
+    BEGIN TRANSACTION;
+    BEGIN TRY
+
+        -- Generar nuevo ServicioID
+        SELECT @NuevoServicioID = ISNULL(MAX(ServicioID), 0) + 1
+        FROM dbo.SERVICIOS;
+
+        -- Insertar el nuevo servicio
+        INSERT INTO dbo.SERVICIOS (ServicioID, Nombre, Precio, DuracionMin, PeluqueriaID)
+        VALUES (@NuevoServicioID, @Nombre, @Precio, @DuracionMin, @PeluqueriaID);
+
+        COMMIT TRANSACTION;
+
+        -- Devolver el servicio creado
+        SELECT
+            s.ServicioID,
+            s.Nombre,
+            s.Precio,
+            s.DuracionMin,
+            p.Nombre AS NombrePeluqueria
+        FROM dbo.SERVICIOS         AS s
+        INNER JOIN dbo.PELUQUERIAS AS p ON p.PeluqueriaID = s.PeluqueriaID
+        WHERE s.ServicioID = @NuevoServicioID;
+
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        THROW;
+    END CATCH
+END;
+
+EXEC dbo.SP_INSERT_SERVICIO_PELUQUERIA
+    @Nombre       = 'Barba y Bigote',
+    @Precio       = 12.00,
+    @DuracionMin  = 20,
+    @PeluqueriaID = 1;
+-------------------------------------
+
+GO
+CREATE OR ALTER PROCEDURE SP_INSERT_EMPLEADO
+    @Nombre       NVARCHAR(100),
+    @PeluqueriaID INT,
+    @Activo       BIT = 1          -- Opcional, activo por defecto
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Verificar que la peluquería existe
+    IF NOT EXISTS (SELECT 1 FROM dbo.PELUQUERIAS WHERE PeluqueriaID = @PeluqueriaID)
+    BEGIN
+        RAISERROR('La PeluqueriaID %d no existe.', 16, 1, @PeluqueriaID);
+        RETURN;
+    END
+
+    -- Verificar que no existe ya un empleado con el mismo nombre en esa peluquería
+    IF EXISTS (SELECT 1 FROM dbo.EMPLEADOS WHERE Nombre = @Nombre AND PeluqueriaID = @PeluqueriaID)
+    BEGIN
+        RAISERROR('Ya existe un empleado con el nombre "%s" en esta peluquería.', 16, 1, @Nombre);
+        RETURN;
+    END
+
+    DECLARE @NuevoEmpleadoID INT;
+
+    BEGIN TRANSACTION;
+    BEGIN TRY
+
+        -- Generar nuevo EmpleadoID
+        SELECT @NuevoEmpleadoID = ISNULL(MAX(EmpleadoID), 0) + 1
+        FROM dbo.EMPLEADOS;
+
+        -- Insertar el nuevo empleado
+        INSERT INTO dbo.EMPLEADOS (EmpleadoID, Nombre, Activo, PeluqueriaID)
+        VALUES (@NuevoEmpleadoID, @Nombre, @Activo, @PeluqueriaID);
+
+        COMMIT TRANSACTION;
+
+        -- Devolver el empleado creado
+        SELECT
+            e.EmpleadoID,
+            e.Nombre,
+            e.Activo,
+            p.Nombre AS NombrePeluqueria
+        FROM dbo.EMPLEADOS         AS e
+        INNER JOIN dbo.PELUQUERIAS AS p ON p.PeluqueriaID = e.PeluqueriaID
+        WHERE e.EmpleadoID = @NuevoEmpleadoID;
+
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        THROW;
+    END CATCH
+END;
+
+-- Con valor por defecto (Activo = 1)
+EXEC SP_INSERT_EMPLEADO
+    @Nombre       = 'Luis Barbero',
+    @PeluqueriaID = 1;
+
+-- Especificando Activo explícitamente
+EXEC SP_INSERT_EMPLEADO
+    @Nombre       = 'María Colorista',
+    @PeluqueriaID = 1,
+    @Activo       = 0;
+-------------------------------------
 GO
 CREATE OR ALTER PROCEDURE SP_PELUQUERIAS_POR_USUARIO
     @UsuarioID INT

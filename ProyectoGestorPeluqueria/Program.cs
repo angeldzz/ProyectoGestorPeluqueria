@@ -7,7 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddTransient<IRepositoryUsuarios, RepositoryUsuarios>();
-builder.Services.AddTransient<IRepositoryGestion, RepositoryGestion>();
+builder.Services.AddTransient<IRepositoryGestorPeluqueria, RepositoryGestorPeluqueria>();
 string connectionstring = builder.Configuration.GetConnectionString("SqlCasa");
 builder.Services.AddDbContext<PeluqueriaContext>(options =>
     options.UseSqlServer(connectionstring));

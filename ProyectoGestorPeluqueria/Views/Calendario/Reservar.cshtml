@@ -10,20 +10,130 @@
 }
 
 <style>
+    /* Evita el salto de maquetación cuando Bootstrap abre/cierra el modal */
+    html {
+        overflow-y: scroll;
+    }
+
     #calendar {
         background: white;
         border-radius: 16px;
-        padding: 16px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
+        padding: 20px;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(0, 0, 0, 0.04);
     }
 
     .leyenda-dot {
         display: inline-block;
-        width: 13px;
-        height: 13px;
+        width: 11px;
+        height: 11px;
         border-radius: 50%;
         vertical-align: middle;
         margin-right: 4px;
+        flex-shrink: 0;
+    }
+
+    .legend-pill {
+        display: inline-flex;
+        align-items: center;
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        padding: 5px 14px;
+        font-size: 0.8rem;
+        color: #475569;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+        font-weight: 500;
+    }
+
+    .page-header-card {
+        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        border-radius: 18px;
+        padding: 26px 30px;
+        color: white;
+        box-shadow: 0 8px 28px rgba(79, 70, 229, 0.25);
+    }
+
+    .modal-content {
+        border-radius: 20px !important;
+        overflow: hidden;
+        border: none !important;
+        box-shadow: 0 24px 64px rgba(0, 0, 0, 0.18) !important;
+    }
+
+    .modal-header-gradient {
+        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        padding: 20px 24px 18px;
+        border: none;
+    }
+
+    .modal-header-gradient .modal-title {
+        color: white;
+    }
+
+    .modal-header-gradient .btn-close {
+        filter: brightness(0) invert(1);
+        opacity: 0.75;
+    }
+
+    .modal-header-gradient .btn-close:hover {
+        opacity: 1;
+    }
+
+    .modal-body .form-label {
+        font-size: 0.78rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: #6b7280;
+        margin-bottom: 6px;
+    }
+
+    .modal-body .form-control,
+    .modal-body .form-select {
+        border-radius: 10px;
+        border-color: #e5e7eb;
+        font-size: 0.9rem;
+        transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .modal-body .form-control:focus,
+    .modal-body .form-select:focus {
+        border-color: #4f46e5;
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+    }
+
+    .modal-body .form-control.bg-light {
+        background-color: #f9fafb !important;
+        color: #9ca3af;
+    }
+
+    .btn-reservar {
+        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        border: none;
+        padding: 8px 22px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.88rem;
+        color: white;
+        transition: opacity 0.2s, box-shadow 0.2s, transform 0.1s;
+    }
+
+    .btn-reservar:hover:not(:disabled) {
+        opacity: 0.9;
+        box-shadow: 0 4px 16px rgba(79, 70, 229, 0.35);
+        transform: translateY(-1px);
+        color: white;
+    }
+
+    .btn-reservar:active:not(:disabled) {
+        transform: translateY(0);
+    }
+
+    .btn-reservar:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+        color: white;
     }
 </style>
 
@@ -45,29 +155,34 @@
         </ol>
     </nav>
 
-    <div class="d-flex flex-wrap align-items-center justify-content-between mb-3 gap-3">
-        <div>
-            <h2 class="fw-bold mb-0">
-                <i class="fas fa-calendar-plus me-2 text-primary"></i>Reservar Cita
-            </h2>
-            <p class="text-muted small mb-0">@Model.NombrePeluqueria · Haz clic en un hueco disponible para reservar</p>
-        </div>
-        <div class="d-flex gap-2 flex-wrap align-items-center">
-            <select id="filtroEmpleado" class="form-select form-select-sm" style="min-width:180px;"
-                    onchange="calendar && calendar.refetchEvents()">
-                <option value="">Todos los empleados</option>
-                @foreach (var emp in empleados)
-                {
-                    <option value="@emp.EmpleadoId">@emp.Nombre</option>
-                }
-            </select>
+    <div class="page-header-card mb-4">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+            <div>
+                <h2 class="fw-bold mb-1 fs-4 text-white">
+                    <i class="fas fa-calendar-plus me-2"></i>Reservar Cita
+                </h2>
+                <p class="mb-0" style="color:rgba(255,255,255,0.75); font-size:0.875rem;">
+                    @Model.NombrePeluqueria &middot; Haz clic en un hueco disponible para reservar
+                </p>
+            </div>
+            <div>
+                <select id="filtroEmpleado" class="form-select form-select-sm"
+                        style="min-width:190px; border-radius:10px;"
+                        onchange="calendar && calendar.refetchEvents()">
+                    <option value="">Todos los empleados</option>
+                    @foreach (var emp in empleados)
+                    {
+                        <option value="@emp.EmpleadoId">@emp.Nombre</option>
+                    }
+                </select>
+            </div>
         </div>
     </div>
 
-    <div class="mb-3 d-flex flex-wrap gap-3 small text-secondary">
-        <span><span class="leyenda-dot" style="background:#86efac; border:1px solid #4ade80;"></span>Disponible (clic para reservar)</span>
-        <span><span class="leyenda-dot" style="background:#4f46e5;"></span>Tu cita</span>
-        <span><span class="leyenda-dot" style="background:#cbd5e1; border:1px solid #94a3b8;"></span>Ocupado</span>
+    <div class="mb-3 d-flex flex-wrap gap-2">
+        <span class="legend-pill"><span class="leyenda-dot" style="background:#86efac; border:1px solid #4ade80;"></span>Disponible</span>
+        <span class="legend-pill"><span class="leyenda-dot" style="background:#4f46e5;"></span>Tu cita</span>
+        <span class="legend-pill"><span class="leyenda-dot" style="background:#cbd5e1; border:1px solid #94a3b8;"></span>Ocupado</span>
     </div>
 
     <div id="calendar"></div>
@@ -77,14 +192,14 @@
 <!-- Modal: Reservar Cita -->
 <div class="modal fade" id="modalReservar" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow rounded-4">
-            <div class="modal-header border-0 pb-0">
+        <div class="modal-content">
+            <div class="modal-header-gradient">
                 <h5 class="modal-title fw-bold">
-                    <i class="fas fa-calendar-check me-2 text-primary"></i>Nueva Reserva
+                    <i class="fas fa-calendar-check me-2"></i>Nueva Reserva
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body px-4 pt-3 pb-2">
                 <div class="mb-3">
                     <label class="form-label fw-semibold small">Empleado</label>
                     <select class="form-select" id="resEmpleado">
@@ -124,10 +239,10 @@
                     <i class="fas fa-check-circle me-1"></i>¡Cita reservada con éxito!
                 </div>
             </div>
-            <div class="modal-footer border-0 pt-0">
-                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary btn-sm fw-semibold" id="btnConfirmar" onclick="confirmarReserva()">
-                    <i class="fas fa-check me-1"></i>Confirmar
+            <div class="modal-footer border-0 px-4 pb-4 pt-2">
+                <button type="button" class="btn btn-light btn-sm px-3" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-reservar btn-sm" id="btnConfirmar" onclick="confirmarReserva()">
+                    <i class="fas fa-check me-1"></i>Confirmar Reserva
                 </button>
             </div>
         </div>
@@ -314,7 +429,9 @@
                 return;
             }
 
-            document.getElementById('btnConfirmar').disabled = true;
+            const btnConfirmar = document.getElementById('btnConfirmar');
+            btnConfirmar.disabled = true;
+            btnConfirmar.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span>Confirmando...';
             const resp = await fetch('/Calendario/CrearCita', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -322,6 +439,7 @@
             });
 
             if (resp.ok) {
+                btnConfirmar.innerHTML = '<i class="fas fa-check me-1"></i>¡Reservado!';
                 document.getElementById('resSuccess').classList.remove('d-none');
                 setTimeout(() => {
                     bootstrap.Modal.getInstance(document.getElementById('modalReservar')).hide();
@@ -331,7 +449,8 @@
                 const data = await resp.json().catch(() => ({}));
                 errEl.textContent = data.error || 'El empleado no está disponible en ese horario.';
                 errEl.classList.remove('d-none');
-                document.getElementById('btnConfirmar').disabled = false;
+                btnConfirmar.innerHTML = '<i class="fas fa-check me-1"></i>Confirmar Reserva';
+                btnConfirmar.disabled = false;
             }
         }
     </script>

@@ -73,20 +73,86 @@ BEGIN
     END CATCH
 END;
 GO
+
+
+GO
+CREATE OR ALTER PROCEDURE SP_INSERT_SERVICIO_PELUQUERIA
+    @Nombre       NVARCHAR(100),
+    @Precio       DECIMAL(10, 2),
+    @DuracionMin  INT,
+    @PeluqueriaID INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Verificar que la peluquería existe
+    IF NOT EXISTS (SELECT 1 FROM dbo.PELUQUERIAS WHERE PeluqueriaID = @PeluqueriaID)
+    BEGIN
+        RAISERROR('La PeluqueriaID %d no existe.', 16, 1, @PeluqueriaID);
+        RETURN;
+    END
+
+    -- Verificar que no existe ya un servicio con el mismo nombre en esa peluquería
+    IF EXISTS (SELECT 1 FROM dbo.SERVICIOS WHERE Nombre = @Nombre AND PeluqueriaID = @PeluqueriaID)
+    BEGIN
+        RAISERROR('Ya existe un servicio con el nombre "%s" en esta peluquería.', 16, 1, @Nombre);
+        RETURN;
+    END
+
+    -- Validar Precio positivo
+    IF @Precio <= 0
+    BEGIN
+        RAISERROR('El precio debe ser mayor que 0.', 16, 1);
+        RETURN;
+    END
+
+    -- Validar DuracionMin positiva
+    IF @DuracionMin <= 0
+    BEGIN
+        RAISERROR('La duración en minutos debe ser mayor que 0.', 16, 1);
+        RETURN;
+    END
+
+    DECLARE @NuevoServicioID INT;
+
+    BEGIN TRANSACTION;
+    BEGIN TRY
+
+        -- Generar nuevo ServicioID
+        SELECT @NuevoServicioID = ISNULL(MAX(ServicioID), 0) + 1
+        FROM dbo.SERVICIOS;
+
+        -- Insertar el nuevo servicio
+        INSERT INTO dbo.SERVICIOS (ServicioID, Nombre, Precio, DuracionMin, PeluqueriaID)
+        VALUES (@NuevoServicioID, @Nombre, @Precio, @DuracionMin, @PeluqueriaID);
+
+        COMMIT TRANSACTION;
+
+        -- Devolver el servicio creado
+        SELECT
+            s.ServicioID,
+            s.Nombre,
+            s.Precio,
+            s.DuracionMin,
+            p.Nombre AS NombrePeluqueria
+        FROM dbo.SERVICIOS         AS s
+        INNER JOIN dbo.PELUQUERIAS AS p ON p.PeluqueriaID = s.PeluqueriaID
+        WHERE s.ServicioID = @NuevoServicioID;
+
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        THROW;
+    END CATCH
+END;
 ------------------------------------------
-    EXEC SP_INSERTAR_PELUQUERIA
-    @Nombre = N'Nueva Imagen Barber',
-    @Direccion = N'Avenida Siempre Viva 742',
-    @UrlLogo = N'https://misitio.com/logo.png',
-    @Coordenadas = N'40.4165,-3.7025',
-    @PropietarioID = 2;
      */
     #endregion
-    public class RepositoryGestion : IRepositoryGestion
+    public class RepositoryGestorPeluqueria : IRepositoryGestorPeluqueria
     {
         private PeluqueriaContext context;
 
-        public RepositoryGestion(PeluqueriaContext context)
+        public RepositoryGestorPeluqueria(PeluqueriaContext context)
         {
             this.context = context;
         }
@@ -106,7 +172,27 @@ GO
                 "EXEC SP_INSERTAR_PELUQUERIA @Nombre, @Direccion, @UrlLogo, @Coordenadas, @PropietarioID",
                 paramNombre, paramDireccion, paramLogo, paramCoordenadas, paramPropietario);
         }
+        public async Task CreateServicioPeluqueria(string nombre, decimal precio, int duracionMin, int idPeluqueria)
+        {
+            SqlParameter paramNombre      = new SqlParameter("@Nombre",       nombre);
+            SqlParameter paramPrecio      = new SqlParameter("@Precio",       precio);
+            SqlParameter paramDuracion    = new SqlParameter("@DuracionMin",  duracionMin);
+            SqlParameter paramPeluqueria  = new SqlParameter("@PeluqueriaID", idPeluqueria);
 
+            await this.context.Database.ExecuteSqlRawAsync(
+                "EXEC SP_INSERT_SERVICIO_PELUQUERIA @Nombre, @Precio, @DuracionMin, @PeluqueriaID",
+                paramNombre, paramPrecio, paramDuracion, paramPeluqueria);
+        }
+
+        public async Task CreateEmpleadoPeluqueria(string nombre, int idPeluqueria)
+        {
+            SqlParameter paramNombre     = new SqlParameter("@Nombre",       nombre);
+            SqlParameter paramPeluqueria = new SqlParameter("@PeluqueriaID", idPeluqueria);
+
+            await this.context.Database.ExecuteSqlRawAsync(
+                "EXEC SP_INSERT_EMPLEADO @Nombre, @PeluqueriaID",
+                paramNombre, paramPeluqueria);
+        }
         public Task<List<Empleado>> FindEmpleadosPeluqueria(int idPeluqueria)
         {
             var consulta = from datos in this.context.Empleados

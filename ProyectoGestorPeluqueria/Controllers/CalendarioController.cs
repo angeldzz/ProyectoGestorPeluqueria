@@ -7,9 +7,9 @@ namespace ProyectoGestorPeluqueria.Controllers
 {
     public class CalendarioController : Controller
     {
-        private readonly IRepositoryGestion repo;
+        private readonly IRepositoryGestorPeluqueria repo;
 
-        public CalendarioController(IRepositoryGestion repo)
+        public CalendarioController(IRepositoryGestorPeluqueria repo)
         {
             this.repo = repo;
         }
@@ -182,9 +182,47 @@ namespace ProyectoGestorPeluqueria.Controllers
             await repo.AgregarHorario(req.EmpleadoId, req.Apertura, req.Cierre);
             return Ok(new { success = true });
         }
+
+        [HttpPost]
+        public async Task<IActionResult> AgregarServicio([FromBody] AgregarServicioRequest req)
+        {
+            var usuario = HttpContext.Session.GetObject<Usuario>("usuario");
+            if (usuario == null) return Unauthorized();
+            if (usuario.RolId != 1 && usuario.RolId != 2) return Forbid();
+
+            try
+            {
+                await repo.CreateServicioPeluqueria(req.Nombre, req.Precio, req.DuracionMin, req.PeluqueriaId);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+            return Ok(new { success = true });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AgregarEmpleado([FromBody] AgregarEmpleadoRequest req)
+        {
+            var usuario = HttpContext.Session.GetObject<Usuario>("usuario");
+            if (usuario == null) return Unauthorized();
+            if (usuario.RolId != 1 && usuario.RolId != 2) return Forbid();
+
+            try
+            {
+                await repo.CreateEmpleadoPeluqueria(req.Nombre, req.PeluqueriaId);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+            return Ok(new { success = true });
+        }
     }
 
     public record CrearCitaRequest(int EmpleadoId, int ServicioId, DateTime Inicio, string? Notas);
     public record CambiarEstadoRequest(int CitaId, int EstadoId);
     public record AgregarHorarioRequest(int EmpleadoId, DateTime Apertura, DateTime Cierre);
+    public record AgregarServicioRequest(string Nombre, decimal Precio, int DuracionMin, int PeluqueriaId);
+    public record AgregarEmpleadoRequest(string Nombre, int PeluqueriaId);
 }

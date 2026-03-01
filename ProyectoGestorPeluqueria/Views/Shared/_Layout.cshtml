@@ -153,9 +153,9 @@
                                             @foreach (Peluqueria peluqueria in peluqueriasUsuario)
                                             {
                                                 <li>
-                                                    <a class="dropdown-item" asp-area="" asp-controller="Gestion"
-                                                       asp-action="GestionarPeluqueria"
-                                                       asp-route-idpeluqueria="@peluqueria.PeluqueriaId">
+                                                    <a class="dropdown-item" asp-area="" asp-controller="Calendario"
+                                                       asp-action="Gestionar"
+                                                       asp-route-id="@peluqueria.PeluqueriaId">
                                                         <i class="fa-solid fa-scissors me-2 text-primary"></i>@peluqueria.Nombre
                                                     </a>
                                                 </li>
