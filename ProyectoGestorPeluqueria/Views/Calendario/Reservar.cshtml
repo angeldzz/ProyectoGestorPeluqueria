@@ -33,27 +33,6 @@
         flex-shrink: 0;
     }
 
-    .legend-pill {
-        display: inline-flex;
-        align-items: center;
-        background: white;
-        border: 1px solid #e2e8f0;
-        border-radius: 20px;
-        padding: 5px 14px;
-        font-size: 0.8rem;
-        color: #475569;
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
-        font-weight: 500;
-    }
-
-    .page-header-card {
-        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-        border-radius: 18px;
-        padding: 26px 30px;
-        color: white;
-        box-shadow: 0 8px 28px rgba(79, 70, 229, 0.25);
-    }
-
     .modal-content {
         border-radius: 20px !important;
         overflow: hidden;
@@ -155,37 +134,62 @@
         </ol>
     </nav>
 
-    <div class="page-header-card mb-4">
-        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
-            <div>
-                <h2 class="fw-bold mb-1 fs-4 text-white">
-                    <i class="fas fa-calendar-plus me-2"></i>Reservar Cita
-                </h2>
-                <p class="mb-0" style="color:rgba(255,255,255,0.75); font-size:0.875rem;">
-                    @Model.NombrePeluqueria &middot; Haz clic en un hueco disponible para reservar
-                </p>
-            </div>
-            <div>
-                <select id="filtroEmpleado" class="form-select form-select-sm"
-                        style="min-width:190px; border-radius:10px;"
-                        onchange="calendar && calendar.refetchEvents()">
-                    <option value="">Todos los empleados</option>
-                    @foreach (var emp in empleados)
-                    {
-                        <option value="@emp.EmpleadoId">@emp.Nombre</option>
-                    }
-                </select>
-            </div>
+    <div class="d-flex flex-wrap align-items-center justify-content-between mb-3 gap-3">
+        <div>
+            <h2 class="fw-bold mb-0">
+                <i class="fas fa-calendar-plus me-2 text-primary"></i>Reservar Cita
+            </h2>
+            <p class="text-muted small mb-0">@Model.NombrePeluqueria &middot; Haz clic en un hueco disponible para reservar</p>
+        </div>
+        <div class="d-flex gap-2 flex-wrap align-items-center">
+            <select id="filtroEmpleado" class="form-select form-select-sm" style="min-width:180px;"
+                    onchange="calendar && calendar.refetchEvents()">
+                <option value="">Todos los empleados</option>
+                @foreach (var emp in empleados)
+                {
+                    <option value="@emp.EmpleadoId">@emp.Nombre</option>
+                }
+            </select>
         </div>
     </div>
 
-    <div class="mb-3 d-flex flex-wrap gap-2">
-        <span class="legend-pill"><span class="leyenda-dot" style="background:#86efac; border:1px solid #4ade80;"></span>Disponible</span>
-        <span class="legend-pill"><span class="leyenda-dot" style="background:#4f46e5;"></span>Tu cita</span>
-        <span class="legend-pill"><span class="leyenda-dot" style="background:#cbd5e1; border:1px solid #94a3b8;"></span>Ocupado</span>
+    <div class="mb-3 d-flex flex-wrap gap-3 small text-secondary">
+        <span><span class="leyenda-dot" style="background:#86efac; border:1px solid #4ade80;"></span>Disponible</span>
+        <span><span class="leyenda-dot" style="background:#4f46e5;"></span>Tu cita</span>
+        <span><span class="leyenda-dot" style="background:#cbd5e1; border:1px solid #94a3b8;"></span>Ocupado</span>
     </div>
 
     <div id="calendar"></div>
+
+    <div class="mt-4" style="border-radius:16px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.07);">
+        <div class="d-flex align-items-center gap-2 px-4 py-3"
+             style="background:linear-gradient(135deg,#4f46e5,#7c3aed);">
+            <i class="fas fa-comments text-white"></i>
+            <span class="fw-semibold text-white">Chat con @Model.NombrePeluqueria</span>
+            <span class="ms-auto badge" style="background:rgba(255,255,255,0.18);font-size:0.72rem;font-weight:500;">Próximamente</span>
+        </div>
+        <div style="height:260px;overflow-y:auto;background:#f8fafc;padding:20px 20px 8px;" id="chatMessages">
+            <div class="d-flex gap-2 mb-3">
+                <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center flex-shrink-0"
+                     style="width:34px;height:34px;">
+                    <i class="fas fa-store text-white" style="font-size:0.7rem;"></i>
+                </div>
+                <div>
+                    <div class="bg-white rounded-3 px-3 py-2 shadow-sm" style="max-width:320px;font-size:0.875rem;">
+                        ¡Hola! ¿En qué podemos ayudarte? 😊
+                    </div>
+                    <div class="text-muted mt-1" style="font-size:0.7rem;">@Model.NombrePeluqueria</div>
+                </div>
+            </div>
+        </div>
+        <div class="d-flex gap-2 p-3 border-top" style="background:white;">
+            <input type="text" class="form-control form-control-sm" placeholder="Escribe un mensaje..."
+                   style="border-radius:20px;" disabled />
+            <button class="btn btn-sm btn-primary px-3" style="border-radius:20px;" disabled>
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
 
 </div>
 
@@ -313,16 +317,24 @@
                                     }
                                     processed.push(ev);
                                 } else if (ev.extendedProps && ev.extendedProps.type === 'horario') {
-                                    processed.push(ev);
+                                    processed.push({
+                                        id: ev.id + '_bg',
+                                        start: ev.start,
+                                        end: ev.end,
+                                        display: 'background',
+                                        backgroundColor: 'rgba(134, 239, 172, 0.45)',
+                                        extendedProps: { type: 'horario', empleadoId: ev.extendedProps.empleadoId }
+                                    });
+                                    const labelEnd = new Date(new Date(ev.start).getTime() + 30 * 60000).toISOString();
                                     processed.push({
                                         id: ev.id + '_label',
                                         title: `✓ ${ev.extendedProps.empleadoNombre}`,
                                         start: ev.start,
-                                        end: ev.end,
+                                        end: labelEnd,
                                         backgroundColor: '#86efac',
                                         borderColor: '#4ade80',
                                         textColor: '#166534',
-                                        extendedProps: ev.extendedProps
+                                        extendedProps: { type: 'horario', empleadoId: ev.extendedProps.empleadoId, empleadoNombre: ev.extendedProps.empleadoNombre }
                                     });
                                 } else {
                                     processed.push(ev);
@@ -337,7 +349,8 @@
         });
 
         function abrirModalReservar(dateStr) {
-            document.getElementById('resInicio').value = dateStr.substring(0, 16);
+            const normalizedDate = dateStr.length <= 10 ? dateStr + 'T09:00' : dateStr.substring(0, 16);
+            document.getElementById('resInicio').value = normalizedDate;
             document.getElementById('resError').classList.add('d-none');
             document.getElementById('resSuccess').classList.add('d-none');
             document.getElementById('btnConfirmar').disabled = false;
@@ -405,7 +418,9 @@
             const duracion = parseInt(select.options[select.selectedIndex]?.dataset?.duracion || '30');
             if (inicio) {
                 const fin = new Date(new Date(inicio).getTime() + duracion * 60000);
-                document.getElementById('resFin').value = fin.toISOString().substring(0, 16);
+                const pad = n => String(n).padStart(2, '0');
+                document.getElementById('resFin').value =
+                    `${fin.getFullYear()}-${pad(fin.getMonth() + 1)}-${pad(fin.getDate())}T${pad(fin.getHours())}:${pad(fin.getMinutes())}`;
             }
         }
 
