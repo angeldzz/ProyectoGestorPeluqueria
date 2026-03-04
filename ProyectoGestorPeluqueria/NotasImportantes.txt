@@ -9,10 +9,10 @@ Falta controlar las citas correctamente
 El registrar negocio del layout esta fallando Con implementacion de peluquerias del usuario
 meter en session que ids de peluquerias tiene asignadas el empresario si es que tiene para enviar a gestionarlas
 Pagina gestionar negocio de empresario
+fix: arreglar estilos de reserva de citas
 -------------------------------------------------------------------------------
 Botones de borrar Usuarios, peluquerias, servicios, citas, etc... para eliminar los datos de prueba
 Panel Administrador general para gestionar todo, eliminar datos de prueba, etc...
 Crear Ver mis Citas para clientes:
 https://localhost:7192/Gestion/CitasCliente.
 
-fix: arreglar estilos de reserva de citas

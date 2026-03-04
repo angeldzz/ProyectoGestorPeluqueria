@@ -1,4 +1,6 @@
 @model VwPeluqueriaDuenoServicio
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 @{
     ViewData["Title"] = Model.NombrePeluqueria;
     var usuarioSession = Context.Session.GetObject<Usuario>("usuario");
@@ -94,17 +96,40 @@
 
 <div class="container py-4">
 
-    <!-- Breadcrumb -->
-    <nav aria-label="breadcrumb" class="mb-4">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item">
-                <a asp-controller="Home" asp-action="Index" class="text-decoration-none">
-                    <i class="fas fa-home me-1"></i>Inicio
-                </a>
-            </li>
-            <li class="breadcrumb-item active" aria-current="page">@Model.NombrePeluqueria</li>
-        </ol>
-    </nav>
+    <!-- Breadcrumb + Acción -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a asp-controller="Home" asp-action="Index" class="text-decoration-none">
+                        <i class="fas fa-home me-1"></i>Inicio
+                    </a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">@Model.NombrePeluqueria</li>
+            </ol>
+        </nav>
+        @if (usuarioSession != null && usuarioSession.RolId == 3)
+        {
+            <a asp-controller="Calendario" asp-action="Reservar" asp-route-id="@Model.PeluqueriaId"
+               class="btn btn-reservar text-white text-decoration-none px-4">
+                <i class="fas fa-calendar-check me-2"></i>Reservar Cita
+            </a>
+        }
+        else if (usuarioSession != null && (usuarioSession.RolId == 2 || usuarioSession.RolId == 1) && (Model.DuenoId == usuarioSession.UsuarioId))
+        {
+            <a asp-controller="Calendario" asp-action="Gestionar" asp-route-id="@Model.PeluqueriaId"
+               class="btn btn-reservar text-white text-decoration-none px-4">
+                <i class="fas fa-calendar-alt me-2"></i>Gestionar Agenda
+            </a>
+        }
+        else if (usuarioSession == null)
+        {
+            <a asp-controller="Login" asp-action="Login"
+               class="btn btn-reservar text-white text-decoration-none px-4">
+                <i class="fas fa-sign-in-alt me-2"></i>Inicia sesión para reservar
+            </a>
+        }
+    </div>
 
     <div class="row g-4">
 
@@ -133,42 +158,57 @@
                 </div>
             </div>
 
-            <!-- Empleados -->
+            <!-- Ubicación con mapa -->
             <div class="card info-card p-4 mb-4">
-                <p class="section-title"><i class="fas fa-users me-2"></i>Equipo</p>
-                @if (empleados.Any())
+                <p class="section-title"><i class="fas fa-map-marker-alt me-2"></i>Ubicación</p>
+                @if (!string.IsNullOrEmpty(Model.Direccion))
                 {
-                    <div class="row g-3">
-                        @foreach (var emp in empleados)
-                        {
-                            <div class="col-sm-6">
-                                <div class="empleado-badge">
-                                    <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
-                                         style="width:40px;height:40px;background:#eef2ff;">
-                                        <i class="fas fa-cut text-primary"></i>
-                                    </div>
-                                    <div class="overflow-hidden">
-                                        <div class="fw-semibold text-truncate">@emp.Nombre</div>
-                                        @if (emp.Activo.HasValue)
-                                        {
-                                            <span class="badge @(emp.Activo.Value ? "bg-success" : "bg-secondary") rounded-pill" style="font-size:0.7rem;">
-                                                @(emp.Activo.Value ? "Disponible" : "No disponible")
-                                            </span>
-                                        }
-                                    </div>
-                                </div>
-                            </div>
-                        }
+                    <div class="mb-3">
+                        <div class="detail-label">Dirección</div>
+                        <div class="detail-value">@Model.Direccion</div>
                     </div>
                 }
-                else
+                @if (!string.IsNullOrEmpty(Model.Coordenadas))
+                {
+                    <div id="detailMap" style="height:300px; border-radius:12px; overflow:hidden;"></div>
+                }
+                else if (string.IsNullOrEmpty(Model.Direccion))
                 {
                     <p class="text-muted small mb-0">
-                        <i class="fas fa-info-circle me-1"></i>No hay empleados registrados en este momento.
+                        <i class="fas fa-info-circle me-1"></i>Ubicación no especificada.
                     </p>
                 }
             </div>
 
+            <div class="mt-4" style="border-radius:16px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.07);">
+                <div class="d-flex align-items-center gap-2 px-4 py-3"
+                     style="background:linear-gradient(135deg,#4f46e5,#7c3aed);">
+                    <i class="fas fa-comments text-white"></i>
+                    <span class="fw-semibold text-white">Chat con @Model.NombrePeluqueria</span>
+                    <span class="ms-auto badge" style="background:rgba(255,255,255,0.18);font-size:0.72rem;font-weight:500;">Próximamente</span>
+                </div>
+                <div style="height:260px;overflow-y:auto;background:#f8fafc;padding:20px 20px 8px;" id="chatMessages">
+                    <div class="d-flex gap-2 mb-3">
+                        <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center flex-shrink-0"
+                             style="width:34px;height:34px;">
+                            <i class="fas fa-store text-white" style="font-size:0.7rem;"></i>
+                        </div>
+                        <div>
+                            <div class="bg-white rounded-3 px-3 py-2 shadow-sm" style="max-width:320px;font-size:0.875rem;">
+                                ¡Hola! ¿En qué podemos ayudarte? 😊
+                            </div>
+                            <div class="text-muted mt-1" style="font-size:0.7rem;">@Model.NombrePeluqueria</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex gap-2 p-3 border-top" style="background:white;">
+                    <input type="text" class="form-control form-control-sm" placeholder="Escribe un mensaje..."
+                           style="border-radius:20px;" disabled />
+                    <button class="btn btn-sm btn-primary px-3" style="border-radius:20px;" disabled>
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
         </div>
 
         <!-- Columna lateral -->
@@ -196,27 +236,36 @@
                 </div>
             }
 
-            <!-- Ubicación -->
+            <!-- Equipo -->
             <div class="card info-card p-4 mb-4">
-                <p class="section-title"><i class="fas fa-map-marker-alt me-2"></i>Ubicación</p>
-                @if (!string.IsNullOrEmpty(Model.Direccion))
+                <p class="section-title"><i class="fas fa-users me-2"></i>Equipo</p>
+                @if (empleados.Any())
                 {
-                    <div class="mb-3">
-                        <div class="detail-label">Dirección</div>
-                        <div class="detail-value">@Model.Direccion</div>
+                    <div class="d-flex flex-column gap-2">
+                        @foreach (var emp in empleados)
+                        {
+                            <div class="empleado-badge">
+                                <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                                     style="width:36px;height:36px;background:#eef2ff;">
+                                    <i class="fas fa-cut text-primary" style="font-size:0.8rem;"></i>
+                                </div>
+                                <div class="overflow-hidden">
+                                    <div class="fw-semibold text-truncate small">@emp.Nombre</div>
+                                    @if (emp.Activo.HasValue)
+                                    {
+                                        <span class="badge @(emp.Activo.Value ? "bg-success" : "bg-secondary") rounded-pill" style="font-size:0.65rem;">
+                                            @(emp.Activo.Value ? "Disponible" : "No disponible")
+                                        </span>
+                                    }
+                                </div>
+                            </div>
+                        }
                     </div>
                 }
-                @if (!string.IsNullOrEmpty(Model.Coordenadas))
-                {
-                    <div>
-                        <div class="detail-label">Coordenadas</div>
-                        <div class="coords-text">@Model.Coordenadas</div>
-                    </div>
-                }
-                @if (string.IsNullOrEmpty(Model.Direccion) && string.IsNullOrEmpty(Model.Coordenadas))
+                else
                 {
                     <p class="text-muted small mb-0">
-                        <i class="fas fa-info-circle me-1"></i>Ubicación no especificada.
+                        <i class="fas fa-info-circle me-1"></i>Sin empleados registrados.
                     </p>
                 }
             </div>
@@ -245,34 +294,31 @@
                 }
             </div>
 
-            <!-- Acción principal -->
-            @if (usuarioSession != null && usuarioSession.RolId == 3)
-            {
-                <div class="d-grid">
-                    <a asp-controller="Calendario" asp-action="Reservar" asp-route-id="@Model.PeluqueriaId"
-                       class="btn btn-reservar text-white text-decoration-none text-center">
-                        <i class="fas fa-calendar-check me-2"></i>Reservar Cita
-                    </a>
-                </div>
-            }
-            else if (usuarioSession != null && (usuarioSession.RolId == 2 || usuarioSession.RolId == 1) && (Model.DuenoId == usuarioSession.UsuarioId))
-            {
-                <div class="d-grid">
-                    <a asp-controller="Calendario" asp-action="Gestionar" asp-route-id="@Model.PeluqueriaId"
-                       class="btn btn-reservar text-white text-decoration-none text-center">
-                        <i class="fas fa-calendar-alt me-2"></i>Gestionar Agenda
-                    </a>
-                </div>
-            }
-            else if (usuarioSession == null)
-            {
-                <div class="d-grid">
-                    <a asp-controller="Login" asp-action="Login" class="btn btn-reservar text-white text-decoration-none text-center">
-                        <i class="fas fa-sign-in-alt me-2"></i>Inicia sesión para reservar
-                    </a>
-                </div>
-            }
         </div>
 
     </div>
 </div>
+
+@section Scripts {
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    @if (!string.IsNullOrEmpty(Model.Coordenadas))
+    {
+        <script>
+            (function () {
+                var parts = '@Model.Coordenadas'.split(',');
+                var lat = parseFloat(parts[0]);
+                var lng = parseFloat(parts[1]);
+                if (!isNaN(lat) && !isNaN(lng)) {
+                    var map = L.map('detailMap', { scrollWheelZoom: false, dragging: false, zoomControl: true })
+                               .setView([lat, lng], 15);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '&copy; OpenStreetMap contributors'
+                    }).addTo(map);
+                    L.marker([lat, lng]).addTo(map)
+                     .bindPopup('<strong>@Html.Raw(Model.NombrePeluqueria)</strong><br>@Html.Raw(Model.Direccion ?? "")')
+                     .openPopup();
+                }
+            })();
+        </script>
+    }
+}
