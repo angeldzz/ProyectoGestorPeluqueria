@@ -218,6 +218,60 @@ namespace ProyectoGestorPeluqueria.Controllers
             }
             return Ok(new { success = true });
         }
+
+        [HttpPost]
+        public async Task<IActionResult> EliminarHorario([FromBody] EliminarIdRequest req)
+        {
+            var usuario = HttpContext.Session.GetObject<Usuario>("usuario");
+            if (usuario == null) return Unauthorized();
+            if (usuario.RolId != 1 && usuario.RolId != 2) return Forbid();
+
+            try
+            {
+                await repo.DeleteHorarioAsync(req.Id);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+            return Ok(new { success = true });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EliminarServicio([FromBody] EliminarIdRequest req)
+        {
+            var usuario = HttpContext.Session.GetObject<Usuario>("usuario");
+            if (usuario == null) return Unauthorized();
+            if (usuario.RolId != 1 && usuario.RolId != 2) return Forbid();
+
+            try
+            {
+                await repo.DeleteServicioAsync(req.Id);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+            return Ok(new { success = true });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EliminarEmpleado([FromBody] EliminarIdRequest req)
+        {
+            var usuario = HttpContext.Session.GetObject<Usuario>("usuario");
+            if (usuario == null) return Unauthorized();
+            if (usuario.RolId != 1 && usuario.RolId != 2) return Forbid();
+
+            try
+            {
+                await repo.DeleteEmpleadoAsync(req.Id);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+            return Ok(new { success = true });
+        }
     }
 
     public record CrearCitaRequest(int EmpleadoId, int ServicioId, DateTime Inicio, string? Notas);
@@ -225,4 +279,5 @@ namespace ProyectoGestorPeluqueria.Controllers
     public record AgregarHorarioRequest(int EmpleadoId, DateTime Apertura, DateTime Cierre);
     public record AgregarServicioRequest(string Nombre, decimal Precio, int DuracionMin, int PeluqueriaId);
     public record AgregarEmpleadoRequest(string Nombre, int PeluqueriaId);
+    public record EliminarIdRequest(int Id);
 }

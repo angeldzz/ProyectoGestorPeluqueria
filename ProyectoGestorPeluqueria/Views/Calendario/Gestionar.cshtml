@@ -63,11 +63,13 @@
             <button class="btn btn-sm btn-outline-success fw-semibold" onclick="abrirModalHorario(null, null)">
                 <i class="fas fa-clock me-1"></i>Añadir Horario
             </button>
-            <button class="btn btn-sm btn-outline-primary fw-semibold" onclick="abrirModalServicio()">
-                <i class="fas fa-concierge-bell me-1"></i>Añadir Servicio
+            <button class="btn btn-sm btn-outline-primary fw-semibold"
+                    onclick="bootstrap.Modal.getOrCreateInstance(document.getElementById('modalGestionarServicios')).show()">
+                <i class="fas fa-concierge-bell me-1"></i>Servicios
             </button>
-            <button class="btn btn-sm btn-outline-secondary fw-semibold" onclick="abrirModalEmpleado()">
-                <i class="fas fa-user-plus me-1"></i>Añadir Empleado
+            <button class="btn btn-sm btn-outline-secondary fw-semibold"
+                    onclick="bootstrap.Modal.getOrCreateInstance(document.getElementById('modalGestionarEmpleados')).show()">
+                <i class="fas fa-users-cog me-1"></i>Empleados
             </button>
         </div>
     </div>
@@ -249,12 +251,112 @@
     </div>
 </div>
 
+<!-- Modal: Gestionar Servicios -->
+<div class="modal fade" id="modalGestionarServicios" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow rounded-4">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">
+                    <i class="fas fa-concierge-bell me-2 text-primary"></i>Gestionar Servicios
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                @if (servicios.Any())
+                {
+                    <div class="d-flex flex-column gap-2">
+                        @foreach (var srv in servicios)
+                        {
+                            <div class="d-flex align-items-center justify-content-between p-2 rounded-3 border">
+                                <div>
+                                    <div class="fw-semibold small">@srv.Nombre</div>
+                                    <div class="text-muted" style="font-size:.78rem;">
+                                        @srv.Precio.ToString("C") · @srv.DuracionMin min
+                                    </div>
+                                </div>
+                                <button class="btn btn-sm btn-outline-danger"
+                                        data-id="@srv.ServicioId"
+                                        data-nombre="@srv.Nombre"
+                                        onclick="eliminarServicio(this)">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted small mb-0">
+                        <i class="fas fa-info-circle me-1"></i>No hay servicios registrados.
+                    </p>
+                }
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary btn-sm fw-semibold"
+                        data-bs-dismiss="modal" onclick="abrirModalServicio()">
+                    <i class="fas fa-plus me-1"></i>Añadir nuevo
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Gestionar Empleados -->
+<div class="modal fade" id="modalGestionarEmpleados" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow rounded-4">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">
+                    <i class="fas fa-users me-2 text-secondary"></i>Gestionar Empleados
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                @if (empleados.Any())
+                {
+                    <div class="d-flex flex-column gap-2">
+                        @foreach (var emp in empleados)
+                        {
+                            <div class="d-flex align-items-center justify-content-between p-2 rounded-3 border">
+                                <div class="fw-semibold small">
+                                    <i class="fas fa-cut me-2 text-primary" style="font-size:.75rem;"></i>@emp.Nombre
+                                </div>
+                                <button class="btn btn-sm btn-outline-danger"
+                                        data-id="@emp.EmpleadoId"
+                                        data-nombre="@emp.Nombre"
+                                        onclick="eliminarEmpleado(this)">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted small mb-0">
+                        <i class="fas fa-info-circle me-1"></i>No hay empleados registrados.
+                    </p>
+                }
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm fw-semibold"
+                        data-bs-dismiss="modal" onclick="abrirModalEmpleado()">
+                    <i class="fas fa-user-plus me-1"></i>Añadir nuevo
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/locales/es.global.min.js"></script>
     <script>
         const peluqueriaId = @Model.PeluqueriaId;
         let calendar;
+        let deletingHorario = false;
 
         document.addEventListener('DOMContentLoaded', function () {
             const calendarEl = document.getElementById('calendar');
@@ -274,15 +376,41 @@
                 allDaySlot: false,
                 selectable: true,
                 selectMirror: true,
+                selectAllow: function (selectInfo) {
+                    return selectInfo.start >= new Date();
+                },
                 nowIndicator: true,
                 height: 'auto',
                 select: function (info) {
+                    if (deletingHorario) { calendar.unselect(); return; }
                     abrirModalHorario(info.startStr, info.endStr);
                     calendar.unselect();
                 },
                 eventClick: function (info) {
                     if (info.event.extendedProps.type === 'cita') {
                         abrirModalCita(info.event);
+                    } else if (info.event.extendedProps.type === 'horario') {
+                        confirmarEliminarHorario(info.event);
+                    }
+                },
+                eventDidMount: function (info) {
+                    if (info.event.extendedProps.type === 'horario') {
+                        const btn = document.createElement('button');
+                        btn.title = 'Eliminar horario';
+                        btn.style.cssText = 'position:absolute;top:2px;right:4px;font-size:.6rem;padding:1px 6px;z-index:5;border-radius:4px;background:#dc2626;color:white;border:none;cursor:pointer;line-height:1.4;';
+                        btn.innerHTML = '<i class="fas fa-times"></i>';
+                        btn.addEventListener('mousedown', function (e) {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            deletingHorario = true;
+                            setTimeout(() => { deletingHorario = false; }, 500);
+                        });
+                        btn.addEventListener('click', function (e) {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            confirmarEliminarHorario(info.event);
+                        });
+                        info.el.appendChild(btn);
                     }
                 },
                 events: function (info, successCallback, failureCallback) {
@@ -351,6 +479,11 @@
             }
             if (new Date(apertura) >= new Date(cierre)) {
                 errEl.textContent = 'La apertura debe ser anterior al cierre.';
+                errEl.classList.remove('d-none');
+                return;
+            }
+            if (new Date(apertura) < new Date()) {
+                errEl.textContent = 'No se pueden añadir horarios en fechas pasadas.';
                 errEl.classList.remove('d-none');
                 return;
             }
@@ -427,6 +560,89 @@
             } else {
                 errEl.textContent = 'Error al guardar el empleado. Comprueba que no existe ya.';
                 errEl.classList.remove('d-none');
+            }
+        }
+
+        async function confirmarEliminarHorario(event) {
+            const p = event.extendedProps;
+            const result = await Swal.fire({
+                title: '¿Eliminar horario?',
+                html: `Horario de <strong>${p.empleadoNombre}</strong><br>
+                       <span class="text-muted small">${event.start?.toLocaleString('es-ES') ?? ''} – ${event.end?.toLocaleString('es-ES') ?? ''}</span>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: '<i class="fas fa-trash me-1"></i> Eliminar',
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true
+            });
+            if (!result.isConfirmed) return;
+            const resp = await fetch('/Calendario/EliminarHorario', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: p.horarioId })
+            });
+            if (resp.ok) {
+                calendar.refetchEvents();
+            } else {
+                Swal.fire({ icon: 'error', title: 'Error al eliminar el horario', toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
+            }
+        }
+
+        async function eliminarServicio(btn) {
+            const servicioId = parseInt(btn.dataset.id);
+            const nombre = btn.dataset.nombre;
+            const result = await Swal.fire({
+                title: '¿Eliminar servicio?',
+                html: `Vas a eliminar <strong>${nombre}</strong>.<br>Esta acción no se puede deshacer.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: '<i class="fas fa-trash me-1"></i> Eliminar',
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true
+            });
+            if (!result.isConfirmed) return;
+            const resp = await fetch('/Calendario/EliminarServicio', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: servicioId })
+            });
+            if (resp.ok) {
+                location.reload();
+            } else {
+                const data = await resp.json().catch(() => ({}));
+                Swal.fire({ icon: 'error', title: 'Error', text: data.error || 'No se pudo eliminar el servicio.', toast: true, position: 'top-end', showConfirmButton: false, timer: 3500 });
+            }
+        }
+
+        async function eliminarEmpleado(btn) {
+            const empleadoId = parseInt(btn.dataset.id);
+            const nombre = btn.dataset.nombre;
+            const result = await Swal.fire({
+                title: '¿Eliminar empleado?',
+                html: `Vas a eliminar a <strong>${nombre}</strong>.<br>Esta acción no se puede deshacer.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: '<i class="fas fa-trash me-1"></i> Eliminar',
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true
+            });
+            if (!result.isConfirmed) return;
+            const resp = await fetch('/Calendario/EliminarEmpleado', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: empleadoId })
+            });
+            if (resp.ok) {
+                location.reload();
+            } else {
+                const data = await resp.json().catch(() => ({}));
+                Swal.fire({ icon: 'error', title: 'Error', text: data.error || 'No se pudo eliminar el empleado.', toast: true, position: 'top-end', showConfirmButton: false, timer: 3500 });
             }
         }
     </script>

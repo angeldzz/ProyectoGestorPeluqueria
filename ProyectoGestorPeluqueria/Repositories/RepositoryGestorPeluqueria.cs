@@ -145,6 +145,172 @@ BEGIN
         THROW;
     END CATCH
 END;
+    GO
+CREATE OR ALTER PROCEDURE dbo.SP_ELIMINAR_PELUQUERIA
+    @PeluqueriaID INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Verificar que la peluquería existe
+    IF NOT EXISTS (SELECT 1 FROM dbo.PELUQUERIAS WHERE PeluqueriaID = @PeluqueriaID)
+    BEGIN
+        RAISERROR('La PeluqueriaID %d no existe.', 16, 1, @PeluqueriaID);
+        RETURN;
+    END
+
+    BEGIN TRANSACTION;
+    BEGIN TRY
+
+        -- 1. Eliminar mensajes relacionados con la peluquería o sus citas
+        DELETE FROM dbo.MENSAJES
+        WHERE PeluqueriaID = @PeluqueriaID
+           OR CitaID IN (
+               SELECT c.CitaID
+               FROM dbo.CITAS        AS c
+               INNER JOIN dbo.EMPLEADOS AS e ON e.EmpleadoID = c.EmpleadoID
+               WHERE e.PeluqueriaID = @PeluqueriaID
+           );
+
+        -- 2. Eliminar citas vinculadas a los empleados de la peluquería
+        DELETE FROM dbo.CITAS
+        WHERE EmpleadoID IN (
+            SELECT EmpleadoID FROM dbo.EMPLEADOS WHERE PeluqueriaID = @PeluqueriaID
+        );
+
+        -- 3. Eliminar horarios de los empleados de la peluquería
+        DELETE FROM dbo.HORARIOS_EMPLEADO
+        WHERE EmpleadoID IN (
+            SELECT EmpleadoID FROM dbo.EMPLEADOS WHERE PeluqueriaID = @PeluqueriaID
+        );
+
+        -- 4. Eliminar empleados de la peluquería
+        DELETE FROM dbo.EMPLEADOS WHERE PeluqueriaID = @PeluqueriaID;
+
+        -- 5. Eliminar servicios de la peluquería
+        DELETE FROM dbo.SERVICIOS WHERE PeluqueriaID = @PeluqueriaID;
+
+        -- 6. Eliminar la peluquería
+        DELETE FROM dbo.PELUQUERIAS WHERE PeluqueriaID = @PeluqueriaID;
+
+        COMMIT TRANSACTION;
+
+        SELECT CONCAT('Peluquería con ID ', @PeluqueriaID, ' eliminada correctamente.') AS Resultado;
+
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        THROW;
+    END CATCH
+END;
+GO
+CREATE OR ALTER PROCEDURE dbo.SP_ELIMINAR_SERVICIO
+    @ServicioID INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.SERVICIOS WHERE ServicioID = @ServicioID)
+    BEGIN
+        RAISERROR('El ServicioID %d no existe.', 16, 1, @ServicioID);
+        RETURN;
+    END
+
+    BEGIN TRANSACTION;
+    BEGIN TRY
+
+        -- 1. Eliminar mensajes vinculados a citas de este servicio
+        DELETE FROM dbo.MENSAJES
+        WHERE CitaID IN (
+            SELECT CitaID FROM dbo.CITAS WHERE ServicioID = @ServicioID
+        );
+
+        -- 2. Eliminar citas que usan este servicio
+        DELETE FROM dbo.CITAS WHERE ServicioID = @ServicioID;
+
+        -- 3. Eliminar el servicio
+        DELETE FROM dbo.SERVICIOS WHERE ServicioID = @ServicioID;
+
+        COMMIT TRANSACTION;
+
+        SELECT CONCAT('Servicio con ID ', @ServicioID, ' eliminado correctamente.') AS Resultado;
+
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        THROW;
+    END CATCH
+END;
+
+GO
+CREATE OR ALTER PROCEDURE dbo.SP_ELIMINAR_HORARIO
+    @HorarioID INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.HORARIOS_EMPLEADO WHERE HorarioID = @HorarioID)
+    BEGIN
+        RAISERROR('El HorarioID %d no existe.', 16, 1, @HorarioID);
+        RETURN;
+    END
+
+    BEGIN TRANSACTION;
+    BEGIN TRY
+
+        DELETE FROM dbo.HORARIOS_EMPLEADO WHERE HorarioID = @HorarioID;
+
+        COMMIT TRANSACTION;
+
+        SELECT CONCAT('Horario con ID ', @HorarioID, ' eliminado correctamente.') AS Resultado;
+
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        THROW;
+    END CATCH
+END;
+GO
+CREATE OR ALTER PROCEDURE dbo.SP_ELIMINAR_EMPLEADO
+    @EmpleadoID INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.EMPLEADOS WHERE EmpleadoID = @EmpleadoID)
+    BEGIN
+        RAISERROR('El EmpleadoID %d no existe.', 16, 1, @EmpleadoID);
+        RETURN;
+    END
+
+    BEGIN TRANSACTION;
+    BEGIN TRY
+
+        -- 1. Eliminar mensajes vinculados a citas de este empleado
+        DELETE FROM dbo.MENSAJES
+        WHERE CitaID IN (
+            SELECT CitaID FROM dbo.CITAS WHERE EmpleadoID = @EmpleadoID
+        );
+
+        -- 2. Eliminar citas del empleado
+        DELETE FROM dbo.CITAS WHERE EmpleadoID = @EmpleadoID;
+
+        -- 3. Eliminar horarios del empleado
+        DELETE FROM dbo.HORARIOS_EMPLEADO WHERE EmpleadoID = @EmpleadoID;
+
+        -- 4. Eliminar el empleado
+        DELETE FROM dbo.EMPLEADOS WHERE EmpleadoID = @EmpleadoID;
+
+        COMMIT TRANSACTION;
+
+        SELECT CONCAT('Empleado con ID ', @EmpleadoID, ' eliminado correctamente.') AS Resultado;
+
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        THROW;
+    END CATCH
+END;
 ------------------------------------------
      */
     #endregion
@@ -326,6 +492,38 @@ END;
                 FechaHoraCierre = cierre
             });
             await this.context.SaveChangesAsync();
+        }
+
+        public async Task DeletePeluqueriaAsync(int idPeluqueria)
+        {
+            SqlParameter paramPeluqueria = new SqlParameter("@PeluqueriaID", idPeluqueria);
+            await this.context.Database.ExecuteSqlRawAsync(
+                "EXEC dbo.SP_ELIMINAR_PELUQUERIA @PeluqueriaID",
+                paramPeluqueria);
+        }
+
+        public async Task DeleteServicioAsync(int servicioId)
+        {
+            SqlParameter paramServicio = new SqlParameter("@ServicioID", servicioId);
+            await this.context.Database.ExecuteSqlRawAsync(
+                "EXEC dbo.SP_ELIMINAR_SERVICIO @ServicioID",
+                paramServicio);
+        }
+
+        public async Task DeleteHorarioAsync(int horarioId)
+        {
+            SqlParameter paramHorario = new SqlParameter("@HorarioID", horarioId);
+            await this.context.Database.ExecuteSqlRawAsync(
+                "EXEC dbo.SP_ELIMINAR_HORARIO @HorarioID",
+                paramHorario);
+        }
+
+        public async Task DeleteEmpleadoAsync(int empleadoId)
+        {
+            SqlParameter paramEmpleado = new SqlParameter("@EmpleadoID", empleadoId);
+            await this.context.Database.ExecuteSqlRawAsync(
+                "EXEC dbo.SP_ELIMINAR_EMPLEADO @EmpleadoID",
+                paramEmpleado);
         }
     }
 }

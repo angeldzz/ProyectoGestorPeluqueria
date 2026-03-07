@@ -14,14 +14,27 @@ namespace ProyectoGestorPeluqueria.Controllers
             this.repo = repo;
             this.repoUser = repoUser;
         }
-        public async Task<IActionResult> DetailsPeluqueria(int id)
+        public async Task<IActionResult> DetailsPeluqueria(int id, bool delete)
         {
             VwPeluqueriaDuenoServicio? peluqueria = await this.repo.FindPeluqueria(id);
             if (peluqueria == null)
             {
                 return NotFound();
             }
+            if (delete)
+            {
+                await this.repo.DeletePeluqueriaAsync(id);
 
+                var peluquerias = HttpContext.Session.GetObject<List<Peluqueria>>("peluqueriasUsuario");
+                if (peluquerias != null)
+                {
+                    peluquerias.RemoveAll(p => p.PeluqueriaId == id);
+                    HttpContext.Session.SetObject("peluqueriasUsuario", peluquerias);
+                }
+
+                TempData["SwalSuccess"] = $"La peluquería '{peluqueria.NombrePeluqueria}' ha sido eliminada correctamente.";
+                return RedirectToAction("Index", "Home");
+            }
             ViewBag.Empleados = await this.repo.FindEmpleadosPeluqueria(id);
             ViewBag.Servicios = await this.repo.FindServiciosPeluqueria(id);
             return View(peluqueria);
