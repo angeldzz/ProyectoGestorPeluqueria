@@ -11,11 +11,10 @@ meter en session que ids de peluquerias tiene asignadas el empresario si es que 
 Pagina gestionar negocio de empresario
 fix: arreglar estilos de reserva de citas
 Botones de borrar peluqueria, servicios, citas, etc... para eliminar los datos de prueba
+Crear Ver mis Citas para clientes
 -------------------------------------------------------------------------------
 
 Panel Administrador general para gestionar todo, eliminar datos de prueba, Botones de borrar Usuarios, etc...
 Crear Funcionalidad de mensajeria entre clientes y peluquerias, para que puedan comunicarse entre ellos, por ejemplo para confirmar citas, preguntar por servicios, etc...
-Crear Ver mis Citas para clientes:
-
-https://localhost:7192/Gestion/CitasCliente.
+Crear cancelacion de Citas para clientes
 

@@ -27,5 +27,8 @@ namespace ProyectoGestorPeluqueria.Repositories
         Task DeleteServicioAsync(int servicioId);
         Task DeleteHorarioAsync(int horarioId);
         Task DeleteEmpleadoAsync(int empleadoId);
+
+        // Cliente
+        Task<List<VwCitasCalendario>> GetCitasClienteAsync(int clienteId, DateTime start, DateTime end);
     }
 }

@@ -525,5 +525,15 @@ END;
                 "EXEC dbo.SP_ELIMINAR_EMPLEADO @EmpleadoID",
                 paramEmpleado);
         }
+
+        public Task<List<VwCitasCalendario>> GetCitasClienteAsync(int clienteId, DateTime start, DateTime end)
+        {
+            return this.context.VwCitasCalendarios
+                .Where(c => c.ClienteId == clienteId
+                         && c.FechaHoraInicio < end
+                         && c.FechaHoraFin > start)
+                .OrderBy(c => c.FechaHoraInicio)
+                .ToListAsync();
+        }
     }
 }

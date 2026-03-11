@@ -1,0 +1,329 @@
+﻿@model List<VwCitasCalendario>
+
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet" />
+
+@{
+    ViewData["Title"] = "Mis Citas";
+    var ahora      = DateTime.Now;
+    var proximas   = Model.Where(c => c.FechaHoraInicio >= ahora).ToList();
+    var anteriores = Model.Where(c => c.FechaHoraInicio < ahora)
+                          .OrderByDescending(c => c.FechaHoraInicio).ToList();
+}
+
+@functions {
+    static string ColorEstado(int? id) => id switch
+    {
+        1 => "#f59e0b", 2 => "#10b981", 3 => "#ef4444", 4 => "#64748b", _ => "#4f46e5"
+    };
+    static string BgEstado(int? id) => id switch
+    {
+        1 => "#fffbeb", 2 => "#f0fdf4", 3 => "#fef2f2", 4 => "#f8fafc", _ => "#eef2ff"
+    };
+    static string TextEstado(int? id) => id switch
+    {
+        1 => "#92400e", 2 => "#14532d", 3 => "#7f1d1d", 4 => "#334155", _ => "#3730a3"
+    };
+    static string IconEstado(int? id) => id switch
+    {
+        1 => "fa-clock", 2 => "fa-check-circle",
+        3 => "fa-times-circle", 4 => "fa-user-slash", _ => "fa-calendar"
+    };
+}
+
+<style>
+    html { overflow-y: scroll; }
+
+    .cita-card {
+        border-radius: 16px; border: none;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+        transition: transform .18s, box-shadow .18s;
+        overflow: hidden;
+    }
+    .cita-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+    .cita-card .card-accent { width: 5px; flex-shrink: 0; }
+
+    .section-title {
+        font-size: .78rem; font-weight: 800; text-transform: uppercase;
+        letter-spacing: 1.2px; color: #4f46e5; margin-bottom: 1rem;
+    }
+    #calendar {
+        background: white; border-radius: 16px;
+        padding: 18px; box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+    }
+    .leyenda-dot {
+        display: inline-block; width: 11px; height: 11px;
+        border-radius: 50%; vertical-align: middle; margin-right: 4px;
+    }
+    .empty-state { color: #94a3b8; font-size: .9rem; }
+</style>
+
+<div class="container py-4">
+
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a asp-controller="Home" asp-action="Index" class="text-decoration-none">
+                    <i class="fas fa-home me-1"></i>Inicio
+                </a>
+            </li>
+            <li class="breadcrumb-item active">Mis Citas</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+        <div>
+            <h2 class="fw-bold mb-0">
+                <i class="fas fa-calendar-check me-2 text-primary"></i>Mis Citas
+            </h2>
+            <p class="text-muted small mb-0">@Model.Count cita(s) en total</p>
+        </div>
+        <a asp-controller="Home" asp-action="Index" class="btn btn-outline-primary btn-sm fw-semibold">
+            <i class="fas fa-search me-1"></i>Buscar peluquerías
+        </a>
+    </div>
+
+    <!-- ── Próximas citas ── -->
+    <p class="section-title"><i class="fas fa-arrow-right me-1"></i>Próximas citas</p>
+    @if (proximas.Any())
+    {
+        <div class="row g-3 mb-5">
+            @foreach (var c in proximas)
+            {
+                var color = ColorEstado(c.EstadoId);
+                var bg    = BgEstado(c.EstadoId);
+                var texto = TextEstado(c.EstadoId);
+                var icon  = IconEstado(c.EstadoId);
+                <div class="col-12 col-md-6 col-xl-4">
+                    <div class="card cita-card d-flex flex-row h-100">
+                        <div class="card-accent" style="background:@color;"></div>
+                        <div class="card-body py-3 px-3">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <span class="fw-bold" style="font-size:.95rem;">
+                                    @(c.NombreServicio ?? "Servicio")
+                                </span>
+                                <span class="badge rounded-pill ms-2 flex-shrink-0"
+                                      style="background:@bg;color:@texto;font-size:.7rem;font-weight:700;">
+                                    <i class="fas @icon me-1"></i>@(c.NombreEstado ?? "-")
+                                </span>
+                            </div>
+                            <div class="text-muted small mb-1">
+                                <i class="fas fa-cut me-1 text-primary" style="font-size:.75rem;"></i>
+                                @(c.NombreEmpleado ?? "Empleado")
+                            </div>
+                            <div class="text-muted small mb-1">
+                                <i class="fas fa-calendar-day me-1" style="font-size:.75rem;color:@color;"></i>
+                                @c.FechaHoraInicio.ToString("dddd d 'de' MMMM",
+                                    new System.Globalization.CultureInfo("es-ES"))
+                            </div>
+                            <div class="text-muted small mb-2">
+                                <i class="fas fa-clock me-1" style="font-size:.75rem;color:@color;"></i>
+                                @c.FechaHoraInicio.ToString("HH:mm") – @c.FechaHoraFin.ToString("HH:mm")
+                            </div>
+                            @if (!string.IsNullOrEmpty(c.NotasCliente))
+                            {
+                                <div class="text-muted fst-italic"
+                                     style="font-size:.78rem;border-top:1px solid #f1f5f9;padding-top:6px;">
+                                    <i class="fas fa-sticky-note me-1"></i>@c.NotasCliente
+                                </div>
+                            }
+                            <div class="mt-2">
+                                <a asp-controller="Gestion" asp-action="DetailsPeluqueria"
+                                   asp-route-id="@c.PeluqueriaId"
+                                   class="btn btn-sm fw-semibold text-decoration-none"
+                                   style="font-size:.75rem;padding:3px 10px;border-radius:8px;
+                                          border:1px solid @color;color:@color;">
+                                    <i class="fas fa-store me-1"></i>Ver peluquería
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-4 mb-5 empty-state">
+            <i class="fas fa-calendar-times fa-2x mb-2 d-block text-primary opacity-50"></i>
+            No tienes citas próximas.
+            <a asp-controller="Home" asp-action="Index"
+               class="text-decoration-none fw-semibold">¡Reserva una!</a>
+        </div>
+    }
+
+    <!-- ── Historial ── -->
+    @if (anteriores.Any())
+    {
+        <p class="section-title"><i class="fas fa-history me-1"></i>Historial</p>
+        <div class="row g-3 mb-5">
+            @foreach (var c in anteriores)
+            {
+                var color = ColorEstado(c.EstadoId);
+                var bg    = BgEstado(c.EstadoId);
+                var texto = TextEstado(c.EstadoId);
+                var icon  = IconEstado(c.EstadoId);
+                <div class="col-12 col-md-6 col-xl-4">
+                    <div class="card cita-card d-flex flex-row h-100" style="opacity:.82;">
+                        <div class="card-accent" style="background:@color;"></div>
+                        <div class="card-body py-3 px-3">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <span class="fw-bold" style="font-size:.95rem;">
+                                    @(c.NombreServicio ?? "Servicio")
+                                </span>
+                                <span class="badge rounded-pill ms-2 flex-shrink-0"
+                                      style="background:@bg;color:@texto;font-size:.7rem;font-weight:700;">
+                                    <i class="fas @icon me-1"></i>@(c.NombreEstado ?? "-")
+                                </span>
+                            </div>
+                            <div class="text-muted small mb-1">
+                                <i class="fas fa-cut me-1 text-primary" style="font-size:.75rem;"></i>
+                                @(c.NombreEmpleado ?? "Empleado")
+                            </div>
+                            <div class="text-muted small mb-1">
+                                <i class="fas fa-calendar-day me-1" style="font-size:.75rem;color:@color;"></i>
+                                @c.FechaHoraInicio.ToString("dddd d 'de' MMMM yyyy",
+                                    new System.Globalization.CultureInfo("es-ES"))
+                            </div>
+                            <div class="text-muted small">
+                                <i class="fas fa-clock me-1" style="font-size:.75rem;color:@color;"></i>
+                                @c.FechaHoraInicio.ToString("HH:mm") – @c.FechaHoraFin.ToString("HH:mm")
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    <!-- ── Calendario ── -->
+    <p class="section-title mb-2">
+        <i class="fas fa-calendar-alt me-1"></i>Calendario de citas
+    </p>
+    <div class="mb-3 d-flex flex-wrap gap-3 small text-secondary">
+        <span><span class="leyenda-dot" style="background:#f59e0b;"></span>Pendiente</span>
+        <span><span class="leyenda-dot" style="background:#10b981;"></span>Completada</span>
+        <span><span class="leyenda-dot" style="background:#ef4444;"></span>Cancelada</span>
+        <span><span class="leyenda-dot" style="background:#64748b;"></span>No presentado</span>
+    </div>
+    <div id="calendar"></div>
+
+</div>
+
+<!-- Modal: Detalles de cita -->
+<div class="modal fade" id="modalCita" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow rounded-4 overflow-hidden">
+            <div class="modal-header border-0"
+                 style="background:linear-gradient(135deg,#4f46e5,#7c3aed);padding:20px 24px 18px;">
+                <h5 class="modal-title fw-bold text-white">
+                    <i class="fas fa-calendar-check me-2"></i>Detalles de la cita
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body px-4 py-3">
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="text-uppercase fw-bold text-muted mb-1"
+                             style="font-size:.7rem;letter-spacing:.8px;">Servicio</div>
+                        <div id="detServicio" class="fw-semibold"></div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-uppercase fw-bold text-muted mb-1"
+                             style="font-size:.7rem;letter-spacing:.8px;">Empleado</div>
+                        <div id="detEmpleado"></div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-uppercase fw-bold text-muted mb-1"
+                             style="font-size:.7rem;letter-spacing:.8px;">Inicio</div>
+                        <div id="detInicio"></div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-uppercase fw-bold text-muted mb-1"
+                             style="font-size:.7rem;letter-spacing:.8px;">Fin</div>
+                        <div id="detFin"></div>
+                    </div>
+                    <div class="col-12">
+                        <div class="text-uppercase fw-bold text-muted mb-1"
+                             style="font-size:.7rem;letter-spacing:.8px;">Estado</div>
+                        <span id="detEstadoBadge" class="badge rounded-pill px-3 py-2"
+                              style="font-size:.8rem;"></span>
+                    </div>
+                    <div class="col-12 d-none" id="detNotasWrap">
+                        <div class="text-uppercase fw-bold text-muted mb-1"
+                             style="font-size:.7rem;letter-spacing:.8px;">Notas</div>
+                        <div id="detNotas" class="fst-italic text-muted small"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0 pb-3 px-4 gap-2">
+                <a id="detLinkPeluqueria" href="#"
+                   class="btn btn-outline-primary btn-sm fw-semibold text-decoration-none">
+                    <i class="fas fa-store me-1"></i>Ver peluquería
+                </a>
+                <button type="button" class="btn btn-secondary btn-sm"
+                        data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/locales/es.global.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
+                initialView: 'dayGridMonth',
+                locale: 'es',
+                firstDay: 1,
+                headerToolbar: { left: 'prev,next today', center: 'title', right: '' },
+                buttonText: { today: 'Hoy' },
+                nowIndicator: true,
+                height: 'auto',
+                eventClick: function (info) {
+                    const p = info.event.extendedProps;
+                    const colorMap = { 1: '#f59e0b', 2: '#10b981', 3: '#ef4444', 4: '#64748b' };
+                    const color = colorMap[p.estadoId] ?? '#4f46e5';
+
+                    document.getElementById('detServicio').textContent = p.servicio ?? '-';
+                    document.getElementById('detEmpleado').textContent = p.empleado ?? '-';
+                    document.getElementById('detInicio').textContent = info.event.start
+                        ? info.event.start.toLocaleString('es-ES',
+                            { dateStyle: 'medium', timeStyle: 'short' }) : '-';
+                    document.getElementById('detFin').textContent = info.event.end
+                        ? info.event.end.toLocaleString('es-ES',
+                            { dateStyle: 'medium', timeStyle: 'short' }) : '-';
+
+                    const badge = document.getElementById('detEstadoBadge');
+                    badge.textContent      = p.estado ?? '-';
+                    badge.style.background = color + '22';
+                    badge.style.color      = color;
+                    badge.style.border     = `1px solid ${color}66`;
+
+                    const notasWrap = document.getElementById('detNotasWrap');
+                    document.getElementById('detNotas').textContent = p.notas ?? '';
+                    notasWrap.classList.toggle('d-none', !p.notas);
+
+                    document.getElementById('detLinkPeluqueria').href =
+                        `/Gestion/DetailsPeluqueria?id=${p.peluqueriaId}`;
+
+                    bootstrap.Modal.getOrCreateInstance(
+                        document.getElementById('modalCita')).show();
+                },
+                events: function (info, successCallback, failureCallback) {
+                    fetch(`/Gestion/GetEventosCliente` +
+                          `?start=${encodeURIComponent(info.startStr)}` +
+                          `&end=${encodeURIComponent(info.endStr)}`)
+                        .then(r => {
+                            if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                            return r.json();
+                        })
+                        .then(data => successCallback(data))
+                        .catch(err => failureCallback(
+                            err instanceof Error ? err : new Error(String(err))));
+                }
+            });
+            calendar.render();
+        });
+    </script>
+}
