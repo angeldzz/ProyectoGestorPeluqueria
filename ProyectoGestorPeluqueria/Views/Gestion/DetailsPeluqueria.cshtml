@@ -167,56 +167,67 @@
                 </div>
             </div>
 
-            <!-- Ubicación con mapa -->
-            <div class="card info-card p-4 mb-4">
-                <p class="section-title"><i class="fas fa-map-marker-alt me-2"></i>Ubicación</p>
-                @if (!string.IsNullOrEmpty(Model.Direccion))
-                {
-                    <div class="mb-3">
-                        <div class="detail-label">Dirección</div>
-                        <div class="detail-value">@Model.Direccion</div>
-                    </div>
-                }
-                @if (!string.IsNullOrEmpty(Model.Coordenadas))
-                {
-                    <div id="detailMap" style="height:300px; border-radius:12px; overflow:hidden;"></div>
-                }
-                else if (string.IsNullOrEmpty(Model.Direccion))
-                {
-                    <p class="text-muted small mb-0">
-                        <i class="fas fa-info-circle me-1"></i>Ubicación no especificada.
-                    </p>
-                }
-            </div>
+            <!-- Ubicación + Chat en fila -->
+            <div class="row g-3 mb-4">
 
-            <div class="mt-4" style="border-radius:16px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.07);">
-                <div class="d-flex align-items-center gap-2 px-4 py-3"
-                     style="background:linear-gradient(135deg,#4f46e5,#7c3aed);">
-                    <i class="fas fa-comments text-white"></i>
-                    <span class="fw-semibold text-white">Chat con @Model.NombrePeluqueria</span>
-                    <span class="ms-auto badge" style="background:rgba(255,255,255,0.18);font-size:0.72rem;font-weight:500;">Próximamente</span>
-                </div>
-                <div style="height:260px;overflow-y:auto;background:#f8fafc;padding:20px 20px 8px;" id="chatMessages">
-                    <div class="d-flex gap-2 mb-3">
-                        <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center flex-shrink-0"
-                             style="width:34px;height:34px;">
-                            <i class="fas fa-store text-white" style="font-size:0.7rem;"></i>
-                        </div>
-                        <div>
-                            <div class="bg-white rounded-3 px-3 py-2 shadow-sm" style="max-width:320px;font-size:0.875rem;">
-                                ¡Hola! ¿En qué podemos ayudarte? 😊
+                <!-- Mapa -->
+                <div class="col-12 col-md-6">
+                    <div class="card info-card p-4 h-100">
+                        <p class="section-title"><i class="fas fa-map-marker-alt me-2"></i>Ubicación</p>
+                        @if (!string.IsNullOrEmpty(Model.Direccion))
+                        {
+                            <div class="mb-3">
+                                <div class="detail-label">Dirección</div>
+                                <div class="detail-value">@Model.Direccion</div>
                             </div>
-                            <div class="text-muted mt-1" style="font-size:0.7rem;">@Model.NombrePeluqueria</div>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.Coordenadas))
+                        {
+                            <div id="detailMap" style="height:260px; border-radius:12px; overflow:hidden;"></div>
+                        }
+                        else if (string.IsNullOrEmpty(Model.Direccion))
+                        {
+                            <p class="text-muted small mb-0">
+                                <i class="fas fa-info-circle me-1"></i>Ubicación no especificada.
+                            </p>
+                        }
+                    </div>
+                </div>
+
+                <!-- Chat -->
+                <div class="col-12 col-md-6">
+                    <div class="h-100" style="border-radius:16px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.07); display:flex; flex-direction:column;">
+                        <div class="d-flex align-items-center gap-2 px-4 py-3"
+                             style="background:linear-gradient(135deg,#4f46e5,#7c3aed); flex-shrink:0;">
+                            <i class="fas fa-comments text-white"></i>
+                            <span class="fw-semibold text-white">Chat con @Model.NombrePeluqueria</span>
+                            <span class="ms-auto badge" style="background:rgba(255,255,255,0.18);font-size:0.72rem;font-weight:500;">Próximamente</span>
+                        </div>
+                        <div style="flex:1;overflow-y:auto;background:#f8fafc;padding:20px 20px 8px;" id="chatMessages">
+                            <div class="d-flex gap-2 mb-3">
+                                <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center flex-shrink-0"
+                                     style="width:34px;height:34px;">
+                                    <i class="fas fa-store text-white" style="font-size:0.7rem;"></i>
+                                </div>
+                                <div>
+                                    <div class="bg-white rounded-3 px-3 py-2 shadow-sm" style="max-width:220px;font-size:0.875rem;">
+                                        ¡Hola! ¿En qué podemos ayudarte? 😊
+                                    </div>
+                                    <div class="text-muted mt-1" style="font-size:0.7rem;">@Model.NombrePeluqueria</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2 p-3 border-top" style="background:white; flex-shrink:0;">
+                            <input type="text" class="form-control form-control-sm"
+                                   placeholder="Escribe un mensaje..."
+                                   style="border-radius:20px;" disabled />
+                            <button class="btn btn-sm btn-primary px-3" style="border-radius:20px;" disabled>
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
-                <div class="d-flex gap-2 p-3 border-top" style="background:white;">
-                    <input type="text" class="form-control form-control-sm" placeholder="Escribe un mensaje..."
-                           style="border-radius:20px;" disabled />
-                    <button class="btn btn-sm btn-primary px-3" style="border-radius:20px;" disabled>
-                        <i class="fas fa-paper-plane"></i>
-                    </button>
-                </div>
+
             </div>
         </div>
 

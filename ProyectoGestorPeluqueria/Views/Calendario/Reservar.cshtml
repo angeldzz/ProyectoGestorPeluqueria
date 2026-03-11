@@ -246,19 +246,21 @@
                     right: 'dayGridMonth,timeGridWeek,timeGridDay'
                 },
                 buttonText: { today: 'Hoy', month: 'Mes', week: 'Semana', day: 'Día' },
-                slotMinTime: '07:00:00',
-                slotMaxTime: '22:00:00',
+                slotMinTime: '06:00:00',
+                slotMaxTime: '24:00:00',
                 slotDuration: '00:30:00',
                 allDaySlot: false,
                 nowIndicator: true,
                 height: 'auto',
                 dateClick: function (info) {
+                    if (info.date < new Date()) return;
                     empleadoPreseleccionado = null;
                     abrirModalReservar(info.dateStr);
                 },
                 eventClick: function (info) {
                     const props = info.event.extendedProps;
                     if (props.type === 'horario') {
+                        if (info.event.start < new Date()) return;
                         empleadoPreseleccionado = props.empleadoId;
                         abrirModalReservar(info.event.startStr);
                     }
@@ -406,6 +408,12 @@
 
             if (!inicio) {
                 errEl.textContent = 'Selecciona una fecha y hora de inicio.';
+                errEl.classList.remove('d-none');
+                return;
+            }
+
+            if (new Date(inicio) < new Date()) {
+                errEl.textContent = 'No puedes reservar una cita en una fecha pasada.';
                 errEl.classList.remove('d-none');
                 return;
             }
