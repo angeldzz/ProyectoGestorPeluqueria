@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using ProyectoGestorPeluqueria.Extensions;
+using ProyectoGestorPeluqueria.Filters;
 using ProyectoGestorPeluqueria.Models;
 using ProyectoGestorPeluqueria.Repositories;
+using System.Security.Claims;
 
 namespace ProyectoGestorPeluqueria.Controllers
 {
@@ -14,33 +16,31 @@ namespace ProyectoGestorPeluqueria.Controllers
             this.repo = repo;
         }
 
+        [AuthorizeUsuarios("1", "2")]
         public async Task<IActionResult> Gestionar(int id)
         {
-            var usuario = HttpContext.Session.GetObject<Usuario>("usuario");
-            if (usuario == null) return RedirectToAction("Login", "Login");
-            if (usuario.RolId != 1 && usuario.RolId != 2) return RedirectToAction("Index", "Home");
+            int usuarioId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 
             var peluqueria = await repo.FindPeluqueria(id);
             if (peluqueria == null) return NotFound();
-            if (peluqueria.DuenoId != usuario.UsuarioId) return RedirectToAction("Index", "Home");
+            if (peluqueria.DuenoId != usuarioId) return RedirectToAction("Index", "Home");
 
             ViewBag.Empleados = await repo.FindEmpleadosPeluqueria(id);
             ViewBag.Servicios = await repo.FindServiciosPeluqueria(id);
             return View(peluqueria);
         }
 
+        [AuthorizeUsuarios("3")]
         public async Task<IActionResult> Reservar(int id)
         {
-            var usuario = HttpContext.Session.GetObject<Usuario>("usuario");
-            if (usuario == null) return RedirectToAction("Login", "Login");
-            if (usuario.RolId != 3) return RedirectToAction("Index", "Home");
+            int usuarioId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 
             var peluqueria = await repo.FindPeluqueria(id);
             if (peluqueria == null) return NotFound();
 
             ViewBag.Empleados = await repo.FindEmpleadosPeluqueria(id);
             ViewBag.Servicios = await repo.FindServiciosPeluqueria(id);
-            ViewBag.ClienteId = usuario.UsuarioId;
+            ViewBag.ClienteId = usuarioId;
             return View(peluqueria);
         }
 
@@ -141,14 +141,14 @@ namespace ProyectoGestorPeluqueria.Controllers
         }
 
         [HttpPost]
+        [AuthorizeUsuarios("3")]
         public async Task<IActionResult> CrearCita([FromBody] CrearCitaRequest req)
         {
-            var usuario = HttpContext.Session.GetObject<Usuario>("usuario");
-            if (usuario == null) return Unauthorized();
+            int usuarioId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 
             try
             {
-                await repo.CrearCita(usuario.UsuarioId, req.EmpleadoId, req.ServicioId, req.Inicio, req.Notas);
+                await repo.CrearCita(usuarioId, req.EmpleadoId, req.ServicioId, req.Inicio, req.Notas);
             }
             catch (InvalidOperationException ex)
             {
@@ -163,32 +163,27 @@ namespace ProyectoGestorPeluqueria.Controllers
         }
 
         [HttpPost]
+        [AuthorizeUsuarios]
         public async Task<IActionResult> CambiarEstado([FromBody] CambiarEstadoRequest req)
         {
-            var usuario = HttpContext.Session.GetObject<Usuario>("usuario");
-            if (usuario == null) return Unauthorized();
 
             await repo.CambiarEstadoCita(req.CitaId, req.EstadoId);
             return Ok(new { success = true });
         }
 
         [HttpPost]
+        [AuthorizeUsuarios("1", "2")]
         public async Task<IActionResult> AgregarHorario([FromBody] AgregarHorarioRequest req)
         {
-            var usuario = HttpContext.Session.GetObject<Usuario>("usuario");
-            if (usuario == null) return Unauthorized();
-            if (usuario.RolId != 1 && usuario.RolId != 2) return Forbid();
 
             await repo.AgregarHorario(req.EmpleadoId, req.Apertura, req.Cierre);
             return Ok(new { success = true });
         }
 
         [HttpPost]
+        [AuthorizeUsuarios("1", "2")]
         public async Task<IActionResult> AgregarServicio([FromBody] AgregarServicioRequest req)
         {
-            var usuario = HttpContext.Session.GetObject<Usuario>("usuario");
-            if (usuario == null) return Unauthorized();
-            if (usuario.RolId != 1 && usuario.RolId != 2) return Forbid();
 
             try
             {
@@ -202,11 +197,9 @@ namespace ProyectoGestorPeluqueria.Controllers
         }
 
         [HttpPost]
+        [AuthorizeUsuarios("1", "2")]
         public async Task<IActionResult> AgregarEmpleado([FromBody] AgregarEmpleadoRequest req)
         {
-            var usuario = HttpContext.Session.GetObject<Usuario>("usuario");
-            if (usuario == null) return Unauthorized();
-            if (usuario.RolId != 1 && usuario.RolId != 2) return Forbid();
 
             try
             {
@@ -220,11 +213,9 @@ namespace ProyectoGestorPeluqueria.Controllers
         }
 
         [HttpPost]
+        [AuthorizeUsuarios("1", "2")]
         public async Task<IActionResult> EliminarHorario([FromBody] EliminarIdRequest req)
         {
-            var usuario = HttpContext.Session.GetObject<Usuario>("usuario");
-            if (usuario == null) return Unauthorized();
-            if (usuario.RolId != 1 && usuario.RolId != 2) return Forbid();
 
             try
             {
@@ -238,11 +229,9 @@ namespace ProyectoGestorPeluqueria.Controllers
         }
 
         [HttpPost]
+        [AuthorizeUsuarios("1", "2")]
         public async Task<IActionResult> EliminarServicio([FromBody] EliminarIdRequest req)
         {
-            var usuario = HttpContext.Session.GetObject<Usuario>("usuario");
-            if (usuario == null) return Unauthorized();
-            if (usuario.RolId != 1 && usuario.RolId != 2) return Forbid();
 
             try
             {
@@ -256,11 +245,9 @@ namespace ProyectoGestorPeluqueria.Controllers
         }
 
         [HttpPost]
+        [AuthorizeUsuarios("1", "2")]
         public async Task<IActionResult> EliminarEmpleado([FromBody] EliminarIdRequest req)
         {
-            var usuario = HttpContext.Session.GetObject<Usuario>("usuario");
-            if (usuario == null) return Unauthorized();
-            if (usuario.RolId != 1 && usuario.RolId != 2) return Forbid();
 
             try
             {

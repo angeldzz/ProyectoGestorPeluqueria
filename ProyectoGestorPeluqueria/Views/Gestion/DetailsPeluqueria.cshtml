@@ -3,7 +3,9 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 @{
     ViewData["Title"] = Model.NombrePeluqueria;
-    var usuarioSession = Context.Session.GetObject<Usuario>("usuario");
+    int usuarioId = User.Identity!.IsAuthenticated
+        ? int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value)
+        : 0;
     var empleados = ViewBag.Empleados as List<Empleado> ?? new List<Empleado>();
     var servicios = ViewBag.Servicios as List<Servicio> ?? new List<Servicio>();
 }
@@ -108,14 +110,14 @@
                 <li class="breadcrumb-item active" aria-current="page">@Model.NombrePeluqueria</li>
             </ol>
         </nav>
-        @if (usuarioSession != null && usuarioSession.RolId == 3)
+        @if (User.IsInRole("3"))
         {
             <a asp-controller="Calendario" asp-action="Reservar" asp-route-id="@Model.PeluqueriaId"
                class="btn btn-reservar text-white text-decoration-none px-4">
                 <i class="fas fa-calendar-check me-2"></i>Reservar Cita
             </a>
         }
-        else if (usuarioSession != null && (usuarioSession.RolId == 2 || usuarioSession.RolId == 1) && (Model.DuenoId == usuarioSession.UsuarioId))
+        else if ((User.IsInRole("2") || User.IsInRole("1")) && Model.DuenoId == usuarioId)
         {
             <div class="d-flex gap-2 flex-wrap">
                 <a asp-controller="Calendario" asp-action="Gestionar" asp-route-id="@Model.PeluqueriaId"
@@ -131,9 +133,9 @@
                 </a>
             </div>
         }
-        else if (usuarioSession == null)
+        else if (!User.Identity!.IsAuthenticated)
         {
-            <a asp-controller="Login" asp-action="Login"
+            <a asp-controller="Managed" asp-action="Login"
                class="btn btn-reservar text-white text-decoration-none px-4">
                 <i class="fas fa-sign-in-alt me-2"></i>Inicia sesión para reservar
             </a>

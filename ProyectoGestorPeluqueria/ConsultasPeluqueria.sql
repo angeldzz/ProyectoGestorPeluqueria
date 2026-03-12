@@ -583,14 +583,43 @@ BEGIN
         RETURN;
     END
 
+    -- Obtener datos del horario
+    DECLARE @EmpleadoID        INT;
+    DECLARE @FechaHoraApertura DATETIME;
+    DECLARE @FechaHoraCierre   DATETIME;
+
+    SELECT
+        @EmpleadoID        = EmpleadoID,
+        @FechaHoraApertura = FechaHoraApertura,
+        @FechaHoraCierre   = FechaHoraCierre
+    FROM dbo.HORARIOS_EMPLEADO
+    WHERE HorarioID = @HorarioID;
+
     BEGIN TRANSACTION;
     BEGIN TRY
 
+        -- 1. Eliminar mensajes vinculados a citas dentro del rango horario
+        DELETE FROM dbo.MENSAJES
+        WHERE CitaID IN (
+            SELECT c.CitaID
+            FROM dbo.CITAS AS c
+            WHERE c.EmpleadoID      = @EmpleadoID
+              AND c.FechaHoraInicio >= CAST(@FechaHoraApertura AS DATETIME2)
+              AND c.FechaHoraFin    <= CAST(@FechaHoraCierre   AS DATETIME2)
+        );
+
+        -- 2. Eliminar citas dentro del rango horario del empleado
+        DELETE FROM dbo.CITAS
+        WHERE EmpleadoID      = @EmpleadoID
+          AND FechaHoraInicio >= CAST(@FechaHoraApertura AS DATETIME2)
+          AND FechaHoraFin    <= CAST(@FechaHoraCierre   AS DATETIME2);
+
+        -- 3. Eliminar el horario
         DELETE FROM dbo.HORARIOS_EMPLEADO WHERE HorarioID = @HorarioID;
 
         COMMIT TRANSACTION;
 
-        SELECT CONCAT('Horario con ID ', @HorarioID, ' eliminado correctamente.') AS Resultado;
+        SELECT CONCAT('Horario con ID ', @HorarioID, ' y sus citas asociadas eliminados correctamente.') AS Resultado;
 
     END TRY
     BEGIN CATCH

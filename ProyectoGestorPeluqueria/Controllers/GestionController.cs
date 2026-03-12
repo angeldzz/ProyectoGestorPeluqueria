@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ProyectoGestorPeluqueria.Extensions;
+using ProyectoGestorPeluqueria.Filters;
 using ProyectoGestorPeluqueria.Models;
 using ProyectoGestorPeluqueria.Repositories;
+using System.Security.Claims;
 
 namespace ProyectoGestorPeluqueria.Controllers
 {
@@ -21,9 +23,12 @@ namespace ProyectoGestorPeluqueria.Controllers
             {
                 return NotFound();
             }
-            if (delete)
-            {
-                await this.repo.DeletePeluqueriaAsync(id);
+        if (delete)
+        {
+            if (!User.Identity!.IsAuthenticated || (!User.IsInRole("1") && !User.IsInRole("2")))
+                return RedirectToAction("ErrorAcceso", "Managed");
+
+            await this.repo.DeletePeluqueriaAsync(id);
 
                 var peluquerias = HttpContext.Session.GetObject<List<Peluqueria>>("peluqueriasUsuario");
                 if (peluquerias != null)
@@ -39,66 +44,50 @@ namespace ProyectoGestorPeluqueria.Controllers
             ViewBag.Servicios = await this.repo.FindServiciosPeluqueria(id);
             return View(peluqueria);
         }
+        [AuthorizeUsuarios("2")]
         public IActionResult RegistrarNegocio()
         {
-            Usuario? usuario = HttpContext.Session.GetObject<Usuario>("usuario");
-            if (usuario == null)
-            {
-                return RedirectToAction("Login", "Login");
-            }
-            else if (usuario.RolId != 2)
-            {
-                return RedirectToAction("Index", "Home");
-            }
             return View();
         }
 
         [HttpPost]
+        [AuthorizeUsuarios("2")]
         public async Task<IActionResult> RegistrarNegocio
             (string nombre, string? direccion,
             string? urlLogo, string? cordenadas)
         {
-            Usuario? usuario = HttpContext.Session.GetObject<Usuario>("usuario");
-            if (usuario == null)
-            {
-                return RedirectToAction("Login", "Login");
-            }
-            else if(usuario.RolId != 2)
-            {
-                return RedirectToAction("Index", "Home");
-            }
+            int usuarioId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 
-            await this.repo.CreatePeluqueria(nombre, direccion, urlLogo, cordenadas, usuario.UsuarioId);
-            List<Peluqueria> peluquerias = await this.repoUser.GetPeluqueriasUsuarioAsync(usuario.UsuarioId);
+            await this.repo.CreatePeluqueria(nombre, direccion, urlLogo, cordenadas, usuarioId);
+            List<Peluqueria> peluquerias = await this.repoUser.GetPeluqueriasUsuarioAsync(usuarioId);
             HttpContext.Session.SetObject("peluqueriasUsuario", peluquerias);
             int nuevaId = peluquerias.Max(p => p.PeluqueriaId);
             return RedirectToAction("Gestionar", "Calendario", new { id = nuevaId });
         }
+        [AuthorizeUsuarios("3")]
         public async Task<IActionResult> CitasUsuario()
         {
-            Usuario? usuario = HttpContext.Session.GetObject<Usuario>("usuario");
-            if (usuario == null) return RedirectToAction("Login", "Login");
-            if (usuario.RolId != 3) return RedirectToAction("Index", "Home");
+            int usuarioId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 
             var citas = await this.repo.GetCitasClienteAsync(
-                usuario.UsuarioId,
+                usuarioId,
                 DateTime.Today.AddYears(-2),
                 DateTime.Today.AddYears(2));
             return View(citas);
         }
 
         [HttpGet]
+        [AuthorizeUsuarios("3")]
         public async Task<IActionResult> GetEventosCliente(string start, string end)
         {
-            var usuario = HttpContext.Session.GetObject<Usuario>("usuario");
-            if (usuario == null) return Unauthorized();
+            int usuarioId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 
             if (!DateTimeOffset.TryParse(start, out var startOffset) ||
                 !DateTimeOffset.TryParse(end,   out var endOffset))
                 return BadRequest();
 
             var citas = await this.repo.GetCitasClienteAsync(
-                usuario.UsuarioId, startOffset.DateTime, endOffset.DateTime);
+                usuarioId, startOffset.DateTime, endOffset.DateTime);
 
             var events = citas.Select(c => new
             {

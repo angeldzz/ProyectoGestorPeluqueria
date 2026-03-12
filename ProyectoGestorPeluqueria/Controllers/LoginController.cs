@@ -1,6 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using ProyectoGestorPeluqueria.Extensions;
-using ProyectoGestorPeluqueria.Models;
 using ProyectoGestorPeluqueria.Repositories;
 
 namespace ProyectoGestorPeluqueria.Controllers
@@ -11,26 +9,6 @@ namespace ProyectoGestorPeluqueria.Controllers
         public LoginController(IRepositoryUsuarios repo)
         {
             this.repo = repo;
-        }
-
-        public IActionResult Login()
-        {
-            return View();
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> Login(string email, string password)
-        {
-            Usuario? usuario = await this.repo.LogInUsuarioAsync(email, password);
-            if (usuario == null)
-            {
-                ViewBag.Error = "Email o contraseña incorrectos.";
-                return View();
-            }
-            List<Peluqueria> peluquerias = await this.repo.GetPeluqueriasUsuarioAsync(usuario.UsuarioId);
-            HttpContext.Session.SetObject("usuario", usuario);
-            HttpContext.Session.SetObject("peluqueriasUsuario", peluquerias);
-            return RedirectToAction("Index", "Home");
         }
 
         public IActionResult Registrarse()
@@ -50,13 +28,7 @@ namespace ProyectoGestorPeluqueria.Controllers
 
             int rolId = role == "Empresario" ? 2 : 3;
             await this.repo.CreateUsuarioAsync(nombre, password, email, telefono, rolId);
-            return RedirectToAction("Login");
-        }
-
-        public IActionResult Logout()
-        {
-            HttpContext.Session.Remove("usuario");
-            return RedirectToAction("Login");
+            return RedirectToAction("Login", "Managed");
         }
     }
 }
