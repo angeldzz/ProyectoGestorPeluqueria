@@ -535,5 +535,59 @@ END;
                 .OrderBy(c => c.FechaHoraInicio)
                 .ToListAsync();
         }
+
+        public Task<List<Mensaje>> GetMensajesUsuarioAsync(int clienteId, int idPeluqueria)
+        {
+            return this.context.Mensajes
+                .Where(m => m.UsuarioId == clienteId && m.PeluqueriaId == idPeluqueria)
+                .OrderBy(m => m.HoraCreacion)
+                .ToListAsync();
+        }
+
+        public Task<List<Mensaje>> GetMensajesPeluqueriaAsync(int idPeluqueria)
+        {
+            return this.context.Mensajes
+                .Where(m => m.PeluqueriaId == idPeluqueria)
+                .OrderBy(m => m.HoraCreacion)
+                .ToListAsync();
+        }
+
+        public Task<List<Mensaje>> GetMensajesConversacionAsync(int idPeluqueria, int usuarioAId, int usuarioBId)
+        {
+            return this.context.Mensajes
+                .Where(m => m.PeluqueriaId == idPeluqueria
+                         && (m.UsuarioId == usuarioAId || m.UsuarioId == usuarioBId))
+                .OrderBy(m => m.HoraCreacion)
+                .ToListAsync();
+        }
+
+        public async Task CreateMensajeAsync(int usuarioId, int peluqueriaId, string mensajeText)
+        {
+            int maxId = (await this.context.Mensajes.MaxAsync(m => (int?)m.MensajeId) ?? 0) + 1;
+            var mensaje = new Mensaje
+            {
+                MensajeId = maxId,
+                UsuarioId = usuarioId,
+                PeluqueriaId = peluqueriaId,
+                Mensaje1 = mensajeText,
+                HoraCreacion = DateTime.Now
+            };
+
+            this.context.Mensajes.Add(mensaje);
+            await this.context.SaveChangesAsync();
+        }
+
+        public async Task<bool> DeleteMensajeAsync(int mensajeId, int usuarioId)
+        {
+            var mensaje = await this.context.Mensajes
+                .FirstOrDefaultAsync(m => m.MensajeId == mensajeId && m.UsuarioId == usuarioId);
+
+            if (mensaje == null)
+                return false;
+
+            this.context.Mensajes.Remove(mensaje);
+            await this.context.SaveChangesAsync();
+            return true;
+        }
     }
 }

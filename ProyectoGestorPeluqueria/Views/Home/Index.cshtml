@@ -75,7 +75,7 @@
                 <div class="d-flex flex-column flex-md-row gap-3 justify-content-center justify-content-lg-start">
                     @if (usuarioSession != null)
                     {
-                        @if (usuarioSession.RolId == 2)
+                        if (usuarioSession.RolId == 2)
                         {
                             <a asp-controller="Gestion" asp-action="RegistrarNegocio" class="btn btn-outline-dark btn-action">
                                 <i class="fas fa-store me-2"></i>Registrar mi Negocio
@@ -229,7 +229,7 @@
                 </nav>
             }
 
-            @if (!Model.Any())
+            if (!Model.Any())
             {
                 <div class="text-center py-5">
                     <i class="fas fa-store-slash fa-3x text-muted mb-3"></i>

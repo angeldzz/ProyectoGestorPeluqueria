@@ -94,6 +94,107 @@
         transform: translateY(-2px);
         box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
     }
+
+    .chat-card {
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+        background: #ffffff;
+        display: flex;
+        flex-direction: column;
+        min-height: 400px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .chat-header {
+        background: linear-gradient(135deg,#4f46e5,#7c3aed);
+    }
+
+    .chat-body {
+        flex: 1;
+        overflow-y: auto;
+        background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+        padding: 16px;
+    }
+
+    .chat-input-wrap {
+        background: #fff;
+        border-top: 1px solid #e2e8f0;
+        padding: 10px;
+    }
+
+    .chat-input {
+        border-radius: 999px;
+        border: 1px solid #cbd5e1;
+    }
+
+    .chat-input:focus {
+        box-shadow: 0 0 0 .2rem rgba(79, 70, 229, .12);
+        border-color: #6366f1;
+    }
+
+    .chat-send {
+        border-radius: 999px;
+        width: 34px;
+        height: 34px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .msg-row {
+        display: flex;
+        margin-bottom: .35rem;
+    }
+
+    .msg-row.mine {
+        justify-content: flex-end;
+    }
+
+    .msg-content {
+        max-width: 78%;
+    }
+
+    .msg-bubble {
+        display: inline-block;
+        border-radius: 12px;
+        padding: .4rem .65rem;
+        font-size: .875rem;
+        line-height: 1.25;
+        word-break: break-word;
+        white-space: pre-wrap;
+    }
+
+    .msg-bubble.mine {
+        background: #2563eb;
+        color: #fff;
+        box-shadow: 0 6px 16px rgba(37, 99, 235, .28);
+    }
+
+    .msg-bubble.other {
+        background: #fff;
+        color: #0f172a;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 3px 10px rgba(2, 6, 23, .06);
+    }
+
+    .msg-meta {
+        font-size: .68rem;
+        color: #64748b;
+        margin-top: 2px;
+    }
+
+    .msg-actions {
+        margin-top: 2px;
+    }
+
+    .msg-delete {
+        border: 0;
+        background: transparent;
+        color: #dc2626;
+        font-size: .7rem;
+        padding: 0;
+    }
 </style>
 
 <div class="container py-4">
@@ -170,10 +271,22 @@
             </div>
 
             <!-- Ubicación + Chat en fila -->
+            @{
+                string mapaClass = "col-12 col-md-6";
+                string chatClass = "col-12 col-md-6";
+                
+                // Si no hay servicios ni empleados, mantenemos en una fila (mitad/mitad como estaba por defecto al entrar el col-lg-8 en la grid de arriba)
+                // Si hay servicios/empleados el col-lg-8 está ocupando menos espacio, pero queremos mapa y chat 1 a 1 en ese espacio
+                if (servicios.Any() || empleados.Any())
+                {
+                    mapaClass = "col-12";
+                    chatClass = "col-12 mt-4";
+                }
+            }
             <div class="row g-3 mb-4">
 
                 <!-- Mapa -->
-                <div class="col-12 col-md-6">
+                <div class="@mapaClass">
                     <div class="card info-card p-4 h-100">
                         <p class="section-title"><i class="fas fa-map-marker-alt me-2"></i>Ubicación</p>
                         @if (!string.IsNullOrEmpty(Model.Direccion))
@@ -197,33 +310,18 @@
                 </div>
 
                 <!-- Chat -->
-                <div class="col-12 col-md-6">
-                    <div class="h-100" style="border-radius:16px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.07); display:flex; flex-direction:column;">
-                        <div class="d-flex align-items-center gap-2 px-4 py-3"
-                             style="background:linear-gradient(135deg,#4f46e5,#7c3aed); flex-shrink:0;">
+                <div class="@chatClass">
+                    <div class="chat-card">
+                        <div class="chat-header d-flex align-items-center gap-2 px-4 py-3" style="flex-shrink:0;">
                             <i class="fas fa-comments text-white"></i>
                             <span class="fw-semibold text-white">Chat con @Model.NombrePeluqueria</span>
-                            <span class="ms-auto badge" style="background:rgba(255,255,255,0.18);font-size:0.72rem;font-weight:500;">Próximamente</span>
                         </div>
-                        <div style="flex:1;overflow-y:auto;background:#f8fafc;padding:20px 20px 8px;" id="chatMessages">
-                            <div class="d-flex gap-2 mb-3">
-                                <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center flex-shrink-0"
-                                     style="width:34px;height:34px;">
-                                    <i class="fas fa-store text-white" style="font-size:0.7rem;"></i>
-                                </div>
-                                <div>
-                                    <div class="bg-white rounded-3 px-3 py-2 shadow-sm" style="max-width:220px;font-size:0.875rem;">
-                                        ¡Hola! ¿En qué podemos ayudarte? 😊
-                                    </div>
-                                    <div class="text-muted mt-1" style="font-size:0.7rem;">@Model.NombrePeluqueria</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="d-flex gap-2 p-3 border-top" style="background:white; flex-shrink:0;">
-                            <input type="text" class="form-control form-control-sm"
-                                   placeholder="Escribe un mensaje..."
-                                   style="border-radius:20px;" disabled />
-                            <button class="btn btn-sm btn-primary px-3" style="border-radius:20px;" disabled>
+                        <div class="chat-body" id="chatMessages"></div>
+                        <div class="chat-input-wrap d-flex gap-2" style="flex-shrink:0;">
+                            <input type="text" id="mensajeInput" class="form-control form-control-sm chat-input"
+                                   placeholder="@(User.Identity!.IsAuthenticated ? "Escribe un mensaje..." : "Inicia sesión para enviar mensajes")"
+                                   @(User.Identity!.IsAuthenticated ? "" : "disabled") />
+                            <button id="enviarMensajeBtn" class="btn btn-primary btn-sm chat-send" @(User.Identity!.IsAuthenticated ? "" : "disabled")>
                                 <i class="fas fa-paper-plane"></i>
                             </button>
                         </div>
@@ -362,4 +460,132 @@
             });
         });
     </script>
+
+    @if (User.Identity!.IsAuthenticated)
+    {
+        <script>
+            const peluqueriaId = @Model.PeluqueriaId;
+            const currentUserId = @usuarioId;
+            const chatMessages = document.getElementById('chatMessages');
+            const mensajeInput = document.getElementById('mensajeInput');
+            const enviarMensajeBtn = document.getElementById('enviarMensajeBtn');
+
+            function scrollBottom() {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            function escapeHtml(text) {
+                return (text ?? '')
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
+            }
+
+            function appendMessage(m) {
+                const esMio = m.emisorId === currentUserId;
+                const rowClass = esMio ? 'msg-row mine' : 'msg-row';
+                const bubbleClass = esMio ? 'msg-bubble mine' : 'msg-bubble other';
+                const hora = m.hora ? escapeHtml(m.hora) : '';
+                const iconOrMargin = esMio
+                    ? ""
+                    : `<div class="rounded-circle bg-primary d-flex align-items-center justify-content-center flex-shrink-0 me-2" style="width:30px;height:30px;"><i class="fas fa-store text-white" style="font-size:0.62rem;"></i></div>`;
+
+                const deleteBtn = esMio
+                    ? `<div class="msg-actions"><button class="msg-delete btn-delete-msg" data-id="${m.mensajeId}">Eliminar</button></div>`
+                    : '';
+
+                const html = `
+                    <div class="${rowClass}">
+                        ${iconOrMargin}
+                        <div class="msg-content">
+                            <div class="${bubbleClass}">${escapeHtml(m.mensaje)}</div>
+                            <div class="msg-meta">${hora}</div>
+                            ${deleteBtn}
+                        </div>
+                    </div>
+                `;
+
+                chatMessages.insertAdjacentHTML('beforeend', html);
+            }
+
+            async function loadMessages() {
+                try {
+                    const res = await fetch(`/Gestion/GetMensajes?peluqueriaId=${peluqueriaId}`);
+                    if (!res.ok) return;
+
+                    const mensajes = await res.json();
+                    chatMessages.innerHTML = '';
+
+                    if (mensajes.length === 0) {
+                        chatMessages.innerHTML = `
+                            <div class="msg-row">
+                                <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center flex-shrink-0 me-2" style="width:30px;height:30px;">
+                                    <i class="fas fa-store text-white" style="font-size:0.62rem;"></i>
+                                </div>
+                                <div class="msg-content">
+                                    <div class="msg-bubble other">¡Hola! ¿En qué podemos ayudarte? 😊</div>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        mensajes.forEach(appendMessage);
+                    }
+
+                    scrollBottom();
+                } catch (e) {
+                    console.error("Error loading messages:", e);
+                }
+            }
+
+            enviarMensajeBtn.addEventListener('click', async () => {
+                const text = mensajeInput.value.trim();
+                if (!text) return;
+
+                try {
+                    const res = await fetch('/Gestion/EnviarMensaje', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ peluqueriaId: peluqueriaId, mensajeText: text })
+                    });
+
+                    if (res.ok) {
+                        mensajeInput.value = '';
+                        await loadMessages();
+                    }
+                } catch (e) {
+                    console.error("Error sending message:", e);
+                }
+            });
+
+            chatMessages.addEventListener('click', async (e) => {
+                const btn = e.target.closest('.btn-delete-msg');
+                if (!btn) return;
+
+                const mensajeId = parseInt(btn.dataset.id);
+                if (isNaN(mensajeId)) return;
+
+                try {
+                    const res = await fetch('/Gestion/DeleteMensaje', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ mensajeId })
+                    });
+
+                    if (res.ok) {
+                        await loadMessages();
+                    }
+                } catch (e) {
+                    console.error("Error deleting message:", e);
+                }
+            });
+
+            mensajeInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') enviarMensajeBtn.click();
+            });
+
+            loadMessages();
+        </script>
+    }
 }

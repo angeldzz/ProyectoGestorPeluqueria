@@ -1,0 +1,138 @@
+/* Layout base to avoid footer overlap */
+html, body {
+  min-height: 100%;
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0 !important;
+}
+
+.layout-main {
+  flex: 1 0 auto;
+  display: block;
+}
+
+/* Footer compacto */
+.footer {
+  position: relative !important;
+  bottom: auto !important;
+  left: auto !important;
+  right: auto !important;
+  margin-top: auto !important;
+  margin-bottom: 0 !important;
+  flex-shrink: 0;
+  width: 100%;
+  white-space: normal;
+  line-height: 1.35;
+  background: #0f172a;
+  color: #cbd5e1 !important;
+  border-top: 1px solid rgba(255,255,255,.08) !important;
+  padding: 0;
+}
+
+.app-footer {
+  padding: 1.25rem 0 .65rem;
+}
+
+.app-footer-brand {
+  color: #f8fafc;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+  margin-bottom: .35rem;
+  font-size: 1rem;
+}
+
+.app-footer-title {
+  color: #f8fafc;
+  font-weight: 700;
+  font-size: .88rem;
+  margin-bottom: .35rem;
+}
+
+.app-footer-text {
+  color: #94a3b8;
+  font-size: .84rem;
+  margin-bottom: 0;
+  max-width: 460px;
+}
+
+.app-footer-links {
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+}
+
+.app-footer-link,
+.app-footer-link:visited,
+.app-footer-link:active {
+  color: #cbd5e1;
+  text-decoration: none;
+  font-size: .84rem;
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  width: fit-content;
+  margin: 0;
+}
+
+.app-footer-link:hover { color: #60a5fa; }
+
+.app-footer-link i {
+  width: 14px;
+  text-align: center;
+  opacity: .9;
+}
+
+.app-footer-bottom {
+  border-top: 1px solid rgba(148,163,184,.22);
+  margin-top: .75rem;
+  padding-top: .55rem;
+  font-size: .78rem;
+  color: #94a3b8;
+}
+
+/* Responsive */
+@media (max-width: 991.98px) {
+  .navbar-nav + .navbar-nav {
+    border-top: 1px solid #dee2e6;
+    padding-top: .5rem;
+    margin-top: .5rem;
+  }
+
+  .dropdown-menu {
+    box-shadow: none;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+    min-width: 100%;
+    margin-top: 2px !important;
+  }
+
+  .dropdown-item {
+    margin: 1px 4px;
+    width: calc(100% - 8px);
+    padding-left: 1.25rem;
+  }
+
+  .btn-login {
+    width: 100%;
+    text-align: center;
+    margin: 4px 0;
+  }
+
+  .app-footer {
+    padding: 1rem 0 .6rem;
+  }
+
+  .app-footer-title,
+  .app-footer-brand,
+  .app-footer-text,
+  .app-footer-link,
+  .app-footer-bottom {
+    text-align: center;
+    justify-content: center;
+    width: 100%;
+  }
+}

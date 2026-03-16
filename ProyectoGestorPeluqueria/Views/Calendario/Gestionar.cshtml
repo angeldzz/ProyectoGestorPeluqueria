@@ -24,6 +24,17 @@
         vertical-align: middle;
         margin-right: 4px;
     }
+
+    .day-check {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        border: 1px solid #dbe2ef;
+        border-radius: 999px;
+        padding: .35rem .65rem;
+        font-size: .82rem;
+        background: #f8fafc;
+    }
 </style>
 
 <div class="py-4">
@@ -62,6 +73,9 @@
             </select>
             <button class="btn btn-sm btn-outline-success fw-semibold" onclick="abrirModalHorario(null, null)">
                 <i class="fas fa-clock me-1"></i>Añadir Horario
+            </button>
+            <button class="btn btn-sm btn-success fw-semibold" onclick="abrirModalHorarioRango()">
+                <i class="fas fa-calendar-plus me-1"></i>Horario por rango
             </button>
             <button class="btn btn-sm btn-outline-primary fw-semibold"
                     onclick="bootstrap.Modal.getOrCreateInstance(document.getElementById('modalGestionarServicios')).show()">
@@ -181,6 +195,61 @@
                 <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
                 <button type="button" class="btn btn-success btn-sm fw-semibold" onclick="guardarHorario()">
                     <i class="fas fa-check me-1"></i>Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Horarios por Rango -->
+<div class="modal fade" id="modalHorarioRango" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow rounded-4">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">
+                    <i class="fas fa-calendar-plus me-2 text-success"></i>Añadir Horarios por Rango
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold small">Empleado</label>
+                    <select class="form-select" id="rngEmpleado">
+                        @foreach (var emp in empleados)
+                        {
+                            <option value="@emp.EmpleadoId">@emp.Nombre</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-6">
+                        <label class="form-label fw-semibold small">Fecha inicio</label>
+                        <input type="date" class="form-control" id="rngFechaInicio" />
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label fw-semibold small">Fecha fin</label>
+                        <input type="date" class="form-control" id="rngFechaFin" />
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-2">
+                    <div class="col-6">
+                        <label class="form-label fw-semibold small">Hora inicio</label>
+                        <input type="time" class="form-control" id="rngHoraInicio" value="08:00" />
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label fw-semibold small">Hora fin</label>
+                        <input type="time" class="form-control" id="rngHoraFin" value="14:00" />
+                    </div>
+                </div>
+
+                <div id="rngError" class="alert alert-danger py-2 small d-none mt-2"></div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success btn-sm fw-semibold" onclick="guardarHorariosRango()">
+                    <i class="fas fa-save me-1"></i>Guardar rango
                 </button>
             </div>
         </div>
@@ -450,6 +519,59 @@
             document.getElementById('horCierre').value = endStr ? endStr.substring(0, 16) : '';
             document.getElementById('horError').classList.add('d-none');
             bootstrap.Modal.getOrCreateInstance(document.getElementById('modalHorario')).show();
+        }
+
+        function abrirModalHorarioRango() {
+            const hoy = new Date().toISOString().substring(0, 10);
+            document.getElementById('rngFechaInicio').value = hoy;
+            document.getElementById('rngFechaFin').value = hoy;
+            document.getElementById('rngHoraInicio').value = '08:00';
+            document.getElementById('rngHoraFin').value = '14:00';
+            document.getElementById('rngError').classList.add('d-none');
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('modalHorarioRango')).show();
+        }
+
+        async function guardarHorariosRango() {
+            const empleadoId = parseInt(document.getElementById('rngEmpleado').value);
+            const fechaInicio = document.getElementById('rngFechaInicio').value;
+            const fechaFin = document.getElementById('rngFechaFin').value;
+            const horaInicio = document.getElementById('rngHoraInicio').value;
+            const horaFin = document.getElementById('rngHoraFin').value;
+            const errEl = document.getElementById('rngError');
+            errEl.classList.add('d-none');
+
+            if (!fechaInicio || !fechaFin || !horaInicio || !horaFin) {
+                errEl.textContent = 'Completa fechas y horas.';
+                errEl.classList.remove('d-none');
+                return;
+            }
+
+            if (horaFin <= horaInicio) {
+                errEl.textContent = 'La hora fin debe ser posterior a la hora inicio.';
+                errEl.classList.remove('d-none');
+                return;
+            }
+
+            const resp = await fetch('/Calendario/AgregarHorariosRango', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    empleadoId,
+                    fechaInicio,
+                    fechaFin,
+                    horaInicio,
+                    horaFin
+                })
+            });
+
+            if (resp.ok) {
+                bootstrap.Modal.getInstance(document.getElementById('modalHorarioRango')).hide();
+                calendar.refetchEvents();
+            } else {
+                const data = await resp.json().catch(() => ({}));
+                errEl.textContent = data.error || 'Error al crear horarios por rango.';
+                errEl.classList.remove('d-none');
+            }
         }
 
         async function guardarEstado() {

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using MvcNetCoreUtilidades.Helpers;
 using ProyectoGestorPeluqueria.Data;
 using ProyectoGestorPeluqueria.Policies;
 using ProyectoGestorPeluqueria.Repositories;
@@ -11,6 +12,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession();
+// Esto es para recoger el nombre del server y el puerto para crear la url de los ficheros subidos
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<HelperPathProvider>();
 builder.Services.AddAuthentication(
     options =>
     {
@@ -51,6 +55,7 @@ builder.Services
     .AddSessionStateTempDataProvider();
 builder.Services.AddTransient<IRepositoryUsuarios, RepositoryUsuarios>();
 builder.Services.AddTransient<IRepositoryGestorPeluqueria, RepositoryGestorPeluqueria>();
+
 string connectionstring = builder.Configuration.GetConnectionString("SqlCasa");
 builder.Services.AddDbContext<PeluqueriaContext>(options =>
     options.UseSqlServer(connectionstring));

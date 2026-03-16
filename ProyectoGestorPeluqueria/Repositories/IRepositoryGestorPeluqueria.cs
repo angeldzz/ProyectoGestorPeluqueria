@@ -21,6 +21,11 @@ namespace ProyectoGestorPeluqueria.Repositories
         Task CrearCita(int clienteId, int empleadoId, int servicioId, DateTime inicio, string? notas);
         Task CambiarEstadoCita(int citaId, int estadoId);
         Task AgregarHorario(int empleadoId, DateTime apertura, DateTime cierre);
+        Task<List<Mensaje>> GetMensajesUsuarioAsync(int clienteId, int idPeluqueria);
+        Task<List<Mensaje>> GetMensajesPeluqueriaAsync(int idPeluqueria);
+        Task<List<Mensaje>> GetMensajesConversacionAsync(int idPeluqueria, int usuarioAId, int usuarioBId);
+        Task CreateMensajeAsync(int usuarioId, int peluqueriaId, string mensajeText);
+        Task<bool> DeleteMensajeAsync(int mensajeId, int usuarioId);
         
         // Deletes
         Task DeletePeluqueriaAsync(int idPeluqueria);

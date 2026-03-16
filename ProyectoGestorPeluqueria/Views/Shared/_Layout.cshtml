@@ -8,100 +8,8 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/layout.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/ProyectoGestorPeluqueria.styles.css" asp-append-version="true" />
-
-    <style>
-        /* Ajustes de estilo para un look más profesional */
-        .navbar {
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px); /* Efecto cristal moderno */
-            background-color: rgba(255, 255, 255, 0.95) !important;
-        }
-        .navbar-brand {
-            font-weight: 700;
-            letter-spacing: -0.5px;
-            color: #2c3e50 !important;
-        }
-        .nav-link {
-            font-weight: 500;
-            margin: 0 5px;
-            transition: color 0.2s;
-        }
-        .nav-link:hover {
-            color: #0d6efd !important; /* Color primario al pasar el mouse */
-        }
-        .btn-login {
-            border-radius: 20px;
-            padding: 8px 20px;
-            font-weight: 600;
-        }
-        .footer {
-            background-color: #f8f9fa;
-        }
-        /* --- Dropdown desktop --- */
-        .dropdown-menu {
-            border: none;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.10);
-            border-radius: 12px;
-            padding: 6px 0;
-            min-width: 220px;
-        }
-        .dropdown-item {
-            display: flex;
-            align-items: center;
-            font-weight: 500;
-            padding: 9px 16px;
-            border-radius: 8px;
-            margin: 2px 6px;
-            width: calc(100% - 12px);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            transition: background 0.2s, color 0.2s;
-        }
-        .dropdown-item i {
-            width: 20px;
-            text-align: center;
-            flex-shrink: 0;
-        }
-        .dropdown-item:hover {
-            background-color: #e9f0ff;
-            color: #0d6efd;
-        }
-        .dropdown-divider {
-            margin: 4px 12px;
-        }
-        .nav-negocios-badge {
-            font-size: 0.7rem;
-            vertical-align: middle;
-            margin-left: 4px;
-        }
-        /* --- Responsive: menú colapsado en móvil --- */
-        @@media (max-width: 991.98px) {
-            .navbar-nav + .navbar-nav {
-                border-top: 1px solid #dee2e6;
-                padding-top: 0.5rem;
-                margin-top: 0.5rem;
-            }
-            .dropdown-menu {
-                box-shadow: none;
-                border-radius: 8px;
-                background-color: #f8f9fa;
-                min-width: 100%;
-                margin-top: 2px !important;
-            }
-            .dropdown-item {
-                margin: 1px 4px;
-                width: calc(100% - 8px);
-                padding-left: 1.25rem;
-            }
-            .btn-login {
-                width: 100%;
-                text-align: center;
-                margin: 4px 0;
-            }
-        }
-    </style>
 </head>
 <body>
     @{
@@ -111,7 +19,7 @@
         <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm sticky-top">
             <div class="container">
                 <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
-                    <i class="fas fa-scissors me-2 text-primary"></i>GestorPeluquería
+                    <i class="fas fa-scissors me-2 text-primary"></i>LookUp
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
                         aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -127,7 +35,7 @@
                         </li>
                         @if (User.Identity!.IsAuthenticated)
                         {
-                            @if (User.IsInRole("3"))
+                            if (User.IsInRole("3"))
                             {
                                 <li class="nav-item">
                                     <a class="nav-link text-dark" asp-area="" asp-controller="Gestion" asp-action="CitasUsuario">
@@ -149,7 +57,7 @@
                                     <ul class="dropdown-menu">
                                         @if (peluqueriasUsuario != null && peluqueriasUsuario.Count > 0)
                                         {
-                                            @foreach (Peluqueria peluqueria in peluqueriasUsuario)
+                                            foreach (Peluqueria peluqueria in peluqueriasUsuario)
                                             {
                                                 <li>
                                                     <a class="dropdown-item" asp-area="" asp-controller="Calendario"
@@ -204,16 +112,65 @@
         </nav>
     </header>
 
-    <div class="container">
+    <div class="container layout-main">
         <main role="main" class="py-4">
             @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top footer text-muted py-3">
-        <div class="container text-center">
-            &copy; 2026 - <span class="fw-bold">Gestor Peluquería</span> -
-            <a asp-area="" asp-controller="Home" asp-action="Privacy" class="text-decoration-none">Privacidad</a>
+    <footer class="footer border-top">
+        <div class="container app-footer">
+            <div class="row g-3 align-items-start">
+                <div class="col-12 col-lg-6">
+                    <div class="app-footer-brand">
+                        <i class="fas fa-scissors me-2 text-primary"></i>LookUp
+                    </div>
+                    <p class="app-footer-text">
+                        Gestión simple de citas, servicios y horarios para peluquerías.
+                    </p>
+                </div>
+
+                <div class="col-6 col-lg-3">
+                    <div class="app-footer-title">Navegación</div>
+                    <div class="app-footer-links">
+                        <a asp-controller="Home" asp-action="Index" class="app-footer-link">
+                            <i class="fas fa-home"></i>Inicio
+                        </a>
+                        <a asp-controller="Home" asp-action="Privacy" class="app-footer-link">
+                            <i class="fas fa-shield-alt"></i>Privacidad
+                        </a>
+                    </div>
+                </div>
+
+                <div class="col-6 col-lg-3">
+                    <div class="app-footer-title">Cuenta</div>
+                    <div class="app-footer-links">
+                        @if (User.Identity!.IsAuthenticated)
+                        {
+                            <span class="app-footer-link">
+                                <i class="fas fa-user-circle"></i>@User.Identity.Name
+                            </span>
+                            <a asp-controller="Managed" asp-action="Logout" class="app-footer-link">
+                                <i class="fas fa-sign-out-alt"></i>Cerrar sesión
+                            </a>
+                        }
+                        else
+                        {
+                            <a asp-controller="Managed" asp-action="Login" class="app-footer-link">
+                                <i class="fas fa-sign-in-alt"></i>Iniciar sesión
+                            </a>
+                            <a asp-controller="Login" asp-action="Registrarse" class="app-footer-link">
+                                <i class="fas fa-user-plus"></i>Registrarse
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="app-footer-bottom d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-1">
+                <span>&copy; @DateTime.Now.Year LookUp</span>
+                <span>Todos los derechos reservados.</span>
+            </div>
         </div>
     </footer>
 

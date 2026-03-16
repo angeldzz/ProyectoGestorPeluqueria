@@ -182,6 +182,33 @@ namespace ProyectoGestorPeluqueria.Controllers
 
         [HttpPost]
         [AuthorizeUsuarios("1", "2")]
+        public async Task<IActionResult> AgregarHorariosRango([FromBody] AgregarHorariosRangoRequest req)
+        {
+            if (req.FechaFin.Date < req.FechaInicio.Date)
+                return BadRequest(new { error = "La fecha fin no puede ser anterior a la fecha inicio." });
+
+            if (!TimeOnly.TryParse(req.HoraInicio, out var horaInicio) || !TimeOnly.TryParse(req.HoraFin, out var horaFin))
+                return BadRequest(new { error = "Formato de hora no válido." });
+
+            if (horaFin <= horaInicio)
+                return BadRequest(new { error = "La hora de fin debe ser posterior a la de inicio." });
+
+            int creados = 0;
+
+            for (DateTime fecha = req.FechaInicio.Date; fecha <= req.FechaFin.Date; fecha = fecha.AddDays(1))
+            {
+                DateTime apertura = fecha.Date.Add(horaInicio.ToTimeSpan());
+                DateTime cierre = fecha.Date.Add(horaFin.ToTimeSpan());
+
+                await repo.AgregarHorario(req.EmpleadoId, apertura, cierre);
+                creados++;
+            }
+
+            return Ok(new { success = true, creados });
+        }
+
+        [HttpPost]
+        [AuthorizeUsuarios("1", "2")]
         public async Task<IActionResult> AgregarServicio([FromBody] AgregarServicioRequest req)
         {
 
@@ -264,6 +291,7 @@ namespace ProyectoGestorPeluqueria.Controllers
     public record CrearCitaRequest(int EmpleadoId, int ServicioId, DateTime Inicio, string? Notas);
     public record CambiarEstadoRequest(int CitaId, int EstadoId);
     public record AgregarHorarioRequest(int EmpleadoId, DateTime Apertura, DateTime Cierre);
+    public record AgregarHorariosRangoRequest(int EmpleadoId, DateTime FechaInicio, DateTime FechaFin, string HoraInicio, string HoraFin);
     public record AgregarServicioRequest(string Nombre, decimal Precio, int DuracionMin, int PeluqueriaId);
     public record AgregarEmpleadoRequest(string Nombre, int PeluqueriaId);
     public record EliminarIdRequest(int Id);
