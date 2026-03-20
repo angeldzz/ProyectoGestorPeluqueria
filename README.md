@@ -1,4 +1,4 @@
-# ?? LookUp · Gestor de Peluquerías
+# LookUp · Gestor de Peluquerías
 
 <p align="center">
   <img src="https://img.shields.io/badge/.NET-10-512BD4?style=for-the-badge&logo=dotnet" />
