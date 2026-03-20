@@ -12,7 +12,38 @@ Plataforma web para **gestionar peluquerías**, pensada para dos perfiles princi
 
 -  **Empresario**: registra su negocio, gestiona agenda, servicios, empleados y horarios.
 -  **Cliente**: busca peluquerías, reserva citas y consulta su historial.
+---
+##  Galería visual
 
+<p align="center"><b>Capturas reales del proyecto</b></p>
+
+<table>
+  <tr>
+    <td><img src="ProyectoGestorPeluqueria/wwwroot/imagenesDemo/Captura%20de%20pantalla%202026-03-20%20090240.png" width="100%"/></td>
+    <td><img src="ProyectoGestorPeluqueria/wwwroot/imagenesDemo/Captura%20de%20pantalla%202026-03-20%20090430.png" width="100%"/></td>
+    <td><img src="ProyectoGestorPeluqueria/wwwroot/imagenesDemo/Captura%20de%20pantalla%202026-03-20%20090553.png" width="100%"/></td>
+  </tr>
+  <tr>
+    <td><img src="ProyectoGestorPeluqueria/wwwroot/imagenesDemo/Captura%20de%20pantalla%202026-03-20%20090606.png" width="100%"/></td>
+    <td><img src="ProyectoGestorPeluqueria/wwwroot/imagenesDemo/Captura%20de%20pantalla%202026-03-20%20090634.png" width="100%"/></td>
+    <td><img src="ProyectoGestorPeluqueria/wwwroot/imagenesDemo/Captura%20de%20pantalla%202026-03-20%20090701.png" width="100%"/></td>
+  </tr>
+  <tr>
+    <td><img src="ProyectoGestorPeluqueria/wwwroot/imagenesDemo/Captura%20de%20pantalla%202026-03-20%20090728.png" width="100%"/></td>
+    <td><img src="ProyectoGestorPeluqueria/wwwroot/imagenesDemo/Captura%20de%20pantalla%202026-03-20%20090743.png" width="100%"/></td>
+    <td><img src="ProyectoGestorPeluqueria/wwwroot/imagenesDemo/Captura%20de%20pantalla%202026-03-20%20090809.png" width="100%"/></td>
+  </tr>
+  <tr>
+    <td><img src="ProyectoGestorPeluqueria/wwwroot/imagenesDemo/Captura%20de%20pantalla%202026-03-20%20090820.png" width="100%"/></td>
+    <td><img src="ProyectoGestorPeluqueria/wwwroot/imagenesDemo/Captura%20de%20pantalla%202026-03-20%20090826.png" width="100%"/></td>
+    <td><img src="ProyectoGestorPeluqueria/wwwroot/imagenesDemo/Captura%20de%20pantalla%202026-03-20%20090835.png" width="100%"/></td>
+  </tr>
+  <tr>
+    <td><img src="ProyectoGestorPeluqueria/wwwroot/imagenesDemo/Captura%20de%20pantalla%202026-03-20%20090846.png" width="100%"/></td>
+    <td><img src="ProyectoGestorPeluqueria/wwwroot/imagenesDemo/Captura%20de%20pantalla%202026-03-20%20090911.png" width="100%"/></td>
+    <td><img src="ProyectoGestorPeluqueria/wwwroot/imagenesDemo/Captura%20de%20pantalla%202026-03-20%20090921.png" width="100%"/></td>
+  </tr>
+</table>
 ---
 
 ##  Funcionalidades principales
@@ -63,40 +94,6 @@ dotnet run --project ProyectoGestorPeluqueria
 ```
 
 > El proyecto depende de tablas, vistas y procedimientos almacenados existentes en SQL Server y en los Repositories.
-
----
-
-##  Galería visual (imagenesDemo)
-
-<p align="center"><b>Capturas reales del proyecto</b></p>
-
-<table>
-  <tr>
-    <td><img src="ProyectoGestorPeluqueria/wwwroot/imagenesDemo/Captura%20de%20pantalla%202026-03-20%20090240.png" width="100%"/></td>
-    <td><img src="ProyectoGestorPeluqueria/wwwroot/imagenesDemo/Captura%20de%20pantalla%202026-03-20%20090430.png" width="100%"/></td>
-    <td><img src="ProyectoGestorPeluqueria/wwwroot/imagenesDemo/Captura%20de%20pantalla%202026-03-20%20090553.png" width="100%"/></td>
-  </tr>
-  <tr>
-    <td><img src="ProyectoGestorPeluqueria/wwwroot/imagenesDemo/Captura%20de%20pantalla%202026-03-20%20090606.png" width="100%"/></td>
-    <td><img src="ProyectoGestorPeluqueria/wwwroot/imagenesDemo/Captura%20de%20pantalla%202026-03-20%20090634.png" width="100%"/></td>
-    <td><img src="ProyectoGestorPeluqueria/wwwroot/imagenesDemo/Captura%20de%20pantalla%202026-03-20%20090701.png" width="100%"/></td>
-  </tr>
-  <tr>
-    <td><img src="ProyectoGestorPeluqueria/wwwroot/imagenesDemo/Captura%20de%20pantalla%202026-03-20%20090728.png" width="100%"/></td>
-    <td><img src="ProyectoGestorPeluqueria/wwwroot/imagenesDemo/Captura%20de%20pantalla%202026-03-20%20090743.png" width="100%"/></td>
-    <td><img src="ProyectoGestorPeluqueria/wwwroot/imagenesDemo/Captura%20de%20pantalla%202026-03-20%20090809.png" width="100%"/></td>
-  </tr>
-  <tr>
-    <td><img src="ProyectoGestorPeluqueria/wwwroot/imagenesDemo/Captura%20de%20pantalla%202026-03-20%20090820.png" width="100%"/></td>
-    <td><img src="ProyectoGestorPeluqueria/wwwroot/imagenesDemo/Captura%20de%20pantalla%202026-03-20%20090826.png" width="100%"/></td>
-    <td><img src="ProyectoGestorPeluqueria/wwwroot/imagenesDemo/Captura%20de%20pantalla%202026-03-20%20090835.png" width="100%"/></td>
-  </tr>
-  <tr>
-    <td><img src="ProyectoGestorPeluqueria/wwwroot/imagenesDemo/Captura%20de%20pantalla%202026-03-20%20090846.png" width="100%"/></td>
-    <td><img src="ProyectoGestorPeluqueria/wwwroot/imagenesDemo/Captura%20de%20pantalla%202026-03-20%20090911.png" width="100%"/></td>
-    <td><img src="ProyectoGestorPeluqueria/wwwroot/imagenesDemo/Captura%20de%20pantalla%202026-03-20%20090921.png" width="100%"/></td>
-  </tr>
-</table>
 
 ---
 
