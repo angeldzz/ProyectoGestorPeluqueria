@@ -1,4 +1,4 @@
-# ?? LookUp · Gestor de Peluquerías
+# ?? LookUp Â· Gestor de PeluquerÃ­as
 
 <p align="center">
   <img src="https://img.shields.io/badge/.NET-10-512BD4?style=for-the-badge&logo=dotnet" />
@@ -8,39 +8,39 @@
   <img src="https://img.shields.io/badge/Leaflet-Map-199900?style=for-the-badge" />
 </p>
 
-Plataforma web para **gestionar peluquerías**, pensada para dos perfiles principales:
+Plataforma web para **gestionar peluquerÃ­as**, pensada para dos perfiles principales:
 
-- ?? **Empresario**: registra su negocio, gestiona agenda, servicios, empleados y horarios.
-- ?? **Cliente**: busca peluquerías, reserva citas y consulta su historial.
+-  **Empresario**: registra su negocio, gestiona agenda, servicios, empleados y horarios.
+-  **Cliente**: busca peluquerÃ­as, reserva citas y consulta su historial.
 
 ---
 
-## ?? Funcionalidades principales
+##  Funcionalidades principales
 
 ### Empresario
-- Alta de peluquería con logo, dirección y coordenadas.
-- Gestión visual del calendario con **FullCalendar**.
+- Alta de peluquerÃ­a con logo, direcciÃ³n y coordenadas.
+- GestiÃ³n visual del calendario con **FullCalendar**.
 - Alta y borrado de:
   - Servicios
   - Empleados
   - Tramos horarios (manual y por rango)
-- Chat con clientes en detalle de peluquería.
+- Chat con clientes en detalle de peluquerÃ­a.
 
 ### Cliente
-- Exploración y búsqueda de peluquerías.
+- ExploraciÃ³n y bÃºsqueda de peluquerÃ­as.
 - Reserva de citas.
-- Vista de **Mis Citas** (próximas + historial + calendario).
-- Chat con la peluquería.
+- Vista de **Mis Citas** (prÃ³ximas + historial + calendario).
+- Chat con la peluquerÃ­a.
 
 ### Plataforma
-- Autenticación por cookies.
-- Políticas/autorización por rol.
+- AutenticaciÃ³n por cookies.
+- PolÃ­ticas/autorizaciÃ³n por rol.
 - Persistencia en SQL Server.
-- Mensajería con permisos por emisor.
+- MensajerÃ­a con permisos por emisor.
 
 ---
 
-## ?? Stack técnico
+##  Stack tÃ©cnico
 
 - `ASP.NET Core (.NET 10)`
 - `Entity Framework Core`
@@ -52,21 +52,21 @@ Plataforma web para **gestionar peluquerías**, pensada para dos perfiles princip
 
 ---
 
-## ?? Puesta en marcha
+##  Puesta en marcha
 
 1. Clona el repositorio.
-2. Configura la cadena de conexión `SqlCasa` en `appsettings.json`.
-3. Ejecuta la solución:
+2. Configura la cadena de conexiÃ³n `SqlServer` en `appsettings.json`.
+3. Ejecuta la soluciÃ³n:
 
 ```bash
 dotnet run --project ProyectoGestorPeluqueria
 ```
 
-> El proyecto depende de tablas, vistas y procedimientos almacenados existentes en SQL Server.
+> El proyecto depende de tablas, vistas y procedimientos almacenados existentes en SQL Server y en los Repositories.
 
 ---
 
-## ??? Galería visual (imagenesDemo)
+##  GalerÃ­a visual (imagenesDemo)
 
 <p align="center"><b>Capturas reales del proyecto</b></p>
 
@@ -100,12 +100,12 @@ dotnet run --project ProyectoGestorPeluqueria
 
 ---
 
-## ?? Notas
+##  Notas
 
-- El proyecto está en evolución continua.
+- El proyecto estÃ¡ en evoluciÃ³n continua.
 - Incluye mejoras de UX/UI recientes en chat, agenda y layout global.
 - Se recomienda ejecutar en entorno local con SQL Server compatible.
 
 ---
 
-<p align="center"><b>Hecho con ?? para digitalizar la gestión de peluquerías</b></p>
+<p align="center"><b>Hecho con para digitalizar la gestiÃ³n de peluquerÃ­as</b></p>
