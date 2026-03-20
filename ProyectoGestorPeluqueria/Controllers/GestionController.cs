@@ -5,6 +5,7 @@ using ProyectoGestorPeluqueria.Filters;
 using ProyectoGestorPeluqueria.Models;
 using ProyectoGestorPeluqueria.Repositories;
 using System.Security.Claims;
+using System.IO;
 
 namespace ProyectoGestorPeluqueria.Controllers
 {
@@ -13,11 +14,14 @@ namespace ProyectoGestorPeluqueria.Controllers
         private IRepositoryGestorPeluqueria repo;
         private IRepositoryUsuarios repoUser;
         private HelperPathProvider helper;
-        public GestionController(IRepositoryGestorPeluqueria repo, IRepositoryUsuarios repoUser, HelperPathProvider helper)
+        private readonly ILogger<GestionController> logger;
+
+        public GestionController(IRepositoryGestorPeluqueria repo, IRepositoryUsuarios repoUser, HelperPathProvider helper, ILogger<GestionController> logger)
         {
             this.repo = repo;
             this.repoUser = repoUser;
             this.helper = helper;
+            this.logger = logger;
         }
         public async Task<IActionResult> DetailsPeluqueria(int id, bool delete)
         {
@@ -61,25 +65,53 @@ namespace ProyectoGestorPeluqueria.Controllers
         {
             int usuarioId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 
-            string? urlLogo = null;
-            if (fichero != null && fichero.Length > 0)
+            try
             {
-                string fileName = fichero.FileName;
-                string path = this.helper.MapPath(fileName, Folders.Images);
-
-                using (Stream stream = new FileStream(path, FileMode.Create))
+                string? urlLogo = null;
+                if (fichero != null && fichero.Length > 0)
                 {
-                    await fichero.CopyToAsync(stream);
+                    string fileName = Path.GetFileName(fichero.FileName);
+                    string path = this.helper.MapPath(fileName, Folders.Images);
+                    string? directory = Path.GetDirectoryName(path);
+                    if (!string.IsNullOrEmpty(directory))
+                    {
+                        Directory.CreateDirectory(directory);
+                    }
+
+                    using (Stream stream = new FileStream(path, FileMode.Create))
+                    {
+                        await fichero.CopyToAsync(stream);
+                    }
+
+                    urlLogo = this.helper.MapUrlPath(fileName, Folders.Images);
                 }
 
-                urlLogo = this.helper.MapUrlPath(fileName, Folders.Images);
-            }
+                await this.repo.CreatePeluqueria(nombre, direccion, urlLogo, cordenadas, usuarioId);
+                List<Peluqueria> peluquerias = await this.repoUser.GetPeluqueriasUsuarioAsync(usuarioId);
+                HttpContext.Session.SetObject("peluqueriasUsuario", peluquerias);
 
-            await this.repo.CreatePeluqueria(nombre, direccion, urlLogo, cordenadas, usuarioId);
-            List<Peluqueria> peluquerias = await this.repoUser.GetPeluqueriasUsuarioAsync(usuarioId);
-            HttpContext.Session.SetObject("peluqueriasUsuario", peluquerias);
-            int nuevaId = peluquerias.Max(p => p.PeluqueriaId);
-            return RedirectToAction("Gestionar", "Calendario", new { id = nuevaId });
+                Peluqueria? nuevaPeluqueria = peluquerias
+                    .OrderByDescending(p => p.PeluqueriaId)
+                    .FirstOrDefault();
+
+                if (nuevaPeluqueria == null)
+                {
+                    this.logger.LogWarning("No se encontró la nueva peluquería tras registrar. UsuarioId: {UsuarioId}", usuarioId);
+                    TempData["SwalError"] = "La peluquería se creó, pero no se pudo cargar en la sesión. Vuelve a intentarlo.";
+                    return RedirectToAction("Index", "Home");
+                }
+
+                return RedirectToAction("Gestionar", "Calendario", new { id = nuevaPeluqueria.PeluqueriaId });
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError(ex,
+                    "Error al registrar peluquería. UsuarioId: {UsuarioId}, Nombre: {Nombre}, Dirección: {Direccion}, Coordenadas: {Cordenadas}, TieneFichero: {TieneFichero}",
+                    usuarioId, nombre, direccion, cordenadas, fichero != null && fichero.Length > 0);
+
+                TempData["SwalError"] = "No se pudo registrar la peluquería. Revisa datos, imagen y conexión a base de datos.";
+                return RedirectToAction(nameof(RegistrarNegocio));
+            }
         }
         [AuthorizeUsuarios("3")]
         public async Task<IActionResult> CitasUsuario()
